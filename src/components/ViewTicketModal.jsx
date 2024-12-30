@@ -1,4 +1,4 @@
-// File: components/ViewTicketModal.js
+// File: components/ViewTicketModal.jsx
 import React from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from "@mui/material";
 
@@ -17,26 +17,37 @@ const ViewTicketModal = ({ ticket, open, onClose }) => {
               InputProps={{ readOnly: true }}
             />
             <TextField
-              label="Subject"
-              value={ticket.subject}
+              label="Full Name"
+              value={ticket.fullName}
               fullWidth
               margin="normal"
               InputProps={{ readOnly: true }}
             />
             <TextField
-              label="Status"
-              value={ticket.status}
+              label="Email"
+              value={ticket.email}
               fullWidth
               margin="normal"
               InputProps={{ readOnly: true }}
             />
+            
             <TextField
-              label="Title"
-              value={ticket.title}
+              label="Category"
+              value={ticket.category}
               fullWidth
               margin="normal"
               InputProps={{ readOnly: true }}
             />
+            {/* Hiển thị Sub-Category chỉ khi Category không phải là "General" */}
+            {ticket.category !== "general" && (
+              <TextField
+                label="Sub-Category"
+                value={ticket.subCategory}
+                fullWidth
+                margin="normal"
+                InputProps={{ readOnly: true }}
+              />
+            )}
             <TextField
               label="Description"
               value={ticket.description}

@@ -1,15 +1,6 @@
+// File: components/TicketTable.jsx
 import React from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Button,
-  Typography,
-} from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Typography } from "@mui/material";
 
 const TicketTable = ({ tickets, onViewClick, onDeleteClick }) => {
   return (
@@ -23,11 +14,8 @@ const TicketTable = ({ tickets, onViewClick, onDeleteClick }) => {
             <TableCell>#</TableCell>
             <TableCell>Full Name</TableCell>
             <TableCell>Email</TableCell>
-            <TableCell>Phone</TableCell>
-            <TableCell>Address</TableCell>
-            <TableCell>Category</TableCell>
-            <TableCell>Sub-Category</TableCell>
-            <TableCell>Description</TableCell>
+            <TableCell>Category</TableCell> {/* Thêm trường Category */}
+            <TableCell>Description</TableCell> {/* Thêm trường Description */}
             <TableCell>Action</TableCell>
           </TableRow>
         </TableHead>
@@ -35,13 +23,10 @@ const TicketTable = ({ tickets, onViewClick, onDeleteClick }) => {
           {tickets.map((ticket) => (
             <TableRow key={ticket.id}>
               <TableCell>{ticket.id}</TableCell>
-              <TableCell>{ticket.fullName}</TableCell>
+              <TableCell>{ticket.fullName}</TableCell> {/* Cập nhật từ fullname thành fullName */}
               <TableCell>{ticket.email}</TableCell>
-              <TableCell>{ticket.phone}</TableCell>
-              <TableCell>{ticket.address}</TableCell>
-              <TableCell>{ticket.category}</TableCell>
-              <TableCell>{ticket.subCategory}</TableCell>
-              <TableCell>{ticket.description}</TableCell>
+              <TableCell>{ticket.category}</TableCell> {/* Hiển thị danh mục */}
+              <TableCell>{ticket.description}</TableCell> {/* Hiển thị mô tả */}
               <TableCell>
                 <Button
                   variant="contained"
@@ -56,9 +41,9 @@ const TicketTable = ({ tickets, onViewClick, onDeleteClick }) => {
                   variant="outlined"
                   color="error"
                   size="small"
-                  onClick={() => onDeleteClick(ticket.id)}
+                  //onClick={() => onDeleteClick(ticket.id)}
                 >
-                  ✕
+                  Edit
                 </Button>
               </TableCell>
             </TableRow>
