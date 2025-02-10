@@ -19,7 +19,7 @@ const VisuallyHiddenInput = styled("input")({
   width: 1,
 });
 
-const CreateTicketModal = ({ open, onClose, onAddTicket }) => {
+const CreateTicketModal = ({ open, onClose,onAddTicket }) => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -48,20 +48,20 @@ const CreateTicketModal = ({ open, onClose, onAddTicket }) => {
 
   const handleAdd = async () => {
     try {
-      console.log("Sending data:", formData); // Kiểm tra dữ liệu trước khi gửi
-  
       const response = await axios.post("http://localhost:4953/v1/tickets", formData, {
         headers: { "Content-Type": "application/json" },
       });
+      if (!formData.fullName || !formData.email || !formData.phone || !formData.category || !formData.description) {
+        alert("Vui lòng điền đầy đủ thông tin!");
+        return;
+      }
   
-      console.log("Ticket created:", response.data);
+      console.log("Sending ticket data:", response.data);
+  
+      // Gửi dữ liệu lên `App.jsx` thông qua `onAddTicket`
       onAddTicket(response.data);
-      Object.keys(formData).forEach(key => {
-        if (formData[key] === undefined) {
-          console.warn(`Field ${key} is undefined!`);
-        }
-      });
-      
+  
+      // Reset form sau khi thêm thành công
       setFormData({
         fullName: "",
         email: "",
@@ -73,12 +73,16 @@ const CreateTicketModal = ({ open, onClose, onAddTicket }) => {
         file: null,
       });
   
+      // Đóng modal sau khi thêm
       onClose();
+  
     } catch (error) {
-      console.error("Error creating ticket:", error);
-      console.error("Server Response:", error.response?.data); // Kiểm tra lỗi từ server
+      console.error("Error adding ticket:", error);
+      alert("Lỗi khi tạo ticket. Vui lòng thử lại!");
     }
   };
+  
+  
   
 
   const handleFileChange = (event) => {

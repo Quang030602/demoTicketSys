@@ -11,7 +11,6 @@ const TicketTable = ({ tickets, onViewClick, onDeleteClick }) => {
       <Table>
         <TableHead>
           <TableRow>
-            <TableCell>#</TableCell>
             <TableCell>Full Name</TableCell>
             <TableCell>Email</TableCell>
             <TableCell>Category</TableCell> {/* Thêm trường Category */}
@@ -22,7 +21,7 @@ const TicketTable = ({ tickets, onViewClick, onDeleteClick }) => {
         <TableBody>
           {tickets.map((ticket) => (
             <TableRow key={ticket.id}>
-              <TableCell>{ticket.id}</TableCell>
+              {/*<TableCell>{ticket.id}</TableCell>*/}
               <TableCell>{ticket.fullName}</TableCell> {/* Cập nhật từ fullname thành fullName */}
               <TableCell>{ticket.email}</TableCell>
               <TableCell>{ticket.category}</TableCell> {/* Hiển thị danh mục */}
