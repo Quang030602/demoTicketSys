@@ -2,7 +2,7 @@
 import React from "react";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Typography } from "@mui/material";
 
-const TicketTable = ({ tickets, onViewClick, onDeleteClick }) => {
+const TicketTable = ({ tickets, onViewClick, onDeleteClick, onEditClick }) => {
   return (
     <TableContainer component={Paper}>
       <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold", textAlign: "center" }}>
@@ -40,10 +40,19 @@ const TicketTable = ({ tickets, onViewClick, onDeleteClick }) => {
                   variant="outlined"
                   color="error"
                   size="small"
-                  //onClick={() => onDeleteClick(ticket.id)}
+                  onClick={() => onEditClick(ticket)}
                 >
                   Edit
                 </Button>
+                <Button sx ={{g: 1, m:1 }}
+                  variant="contained"
+                  color="blue"
+                  size="small"
+                  onClick={() => onDeleteClick(ticket._id)} // Gọi hàm xóa
+                >
+                  Delete
+                </Button>
+
               </TableCell>
             </TableRow>
           ))}

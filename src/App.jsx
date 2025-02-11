@@ -6,12 +6,16 @@ import CreateTicketModal from "./components/TicketForm";
 import TicketTable from "./components/TicketTable";
 import ViewTicketModal from "./components/ViewTicketModal";
 import axios from "axios";
+import EditTicketModal from "./components/utils/EditTicketModal"
 
 function App() {
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [ticketToEdit, setTicketToEdit] = useState(null);
+
 
   // Gọi API để lấy danh sách ticket khi component được mount
   useEffect(() => {
@@ -22,6 +26,54 @@ function App() {
       })
       .catch((error) => console.error("Error fetching tickets:", error));
   }, []);
+
+  const handleEditClick = (ticket) => {
+    // Kiểm tra dữ liệu
+    
+    setTicketToEdit(ticket);
+
+    setIsEditModalOpen(true);
+  };
+  
+  const handleUpdateTicket = (updatedTicket) => {
+    setTickets((prevTickets) =>
+      prevTickets.map((ticket) =>
+        ticket.id === updatedTicket.id ? updatedTicket : ticket
+      )
+    );
+    let config = {
+      method: 'get',
+      maxBodyLength: Infinity,
+      url: 'http://localhost:4953/v1/tickets',
+      headers: { }
+    };
+    
+    axios.request(config)
+    .then((response) => {
+      setTickets(response.data)
+    })
+   
+    .catch((error) => {
+      console.log(error);
+    });
+  };
+  
+  const handleDeleteTicket = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:4953/v1/tickets/${id}`, {
+        method: "DELETE",
+      });
+  
+      if (response.ok) {
+        setTickets((prevTickets) => prevTickets.filter((ticket) => ticket._id !== id));
+      } else {
+        console.error("Failed to delete ticket");
+      }
+    } catch (error) {
+      console.error("Error deleting ticket:", error);
+    }
+  };
+  
 
   // Hàm thêm ticket
   const handleAddTicket = async (newTicket) => {
@@ -55,7 +107,13 @@ function App() {
         <Header />
         <Sidebar onCreateTicketClick={() => setIsCreateModalOpen(true)} />
         <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
-          <TicketTable tickets={tickets} onViewClick={handleViewClick} />
+          <TicketTable
+            tickets={tickets}
+            onViewClick={handleViewClick}
+            onDeleteClick={handleDeleteTicket}
+            onEditClick={handleEditClick}
+          />
+
         </Box>
       </Box>
 
@@ -70,6 +128,16 @@ function App() {
         onClose={() => setIsCreateModalOpen(false)}
         onAddTicket={handleAddTicket}
       />
+
+      <EditTicketModal
+        ticket={ticketToEdit}
+        open={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleUpdateTicket} // Đảm bảo truyền đúng hàm
+      />
+
+
+
     </>
   );
 }
