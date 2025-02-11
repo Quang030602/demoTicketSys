@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from "react";
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, FormControl, InputLabel, MenuItem, Select } from "@mui/material";
 
 const EditTicketModal = ({ ticket, open, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    category: "",
+    category: "general",
+    subCategory: "",
     description: "",
   });
 
+  // Danh sách category và sub-category
+  const categoryOptions = {
+    general: [],
+    technical: ["Issue A1", "Issue A2", "Issue A3"],
+    billing: ["Billing Issue B1", "Billing Issue B2", "Billing Issue B3"],
+    support: ["Support Query C1", "Support Query C2"],
+  };
   useEffect(() => {
     
     if (ticket) {
@@ -71,14 +79,40 @@ const EditTicketModal = ({ ticket, open, onClose, onSave }) => {
           margin="normal"
           onChange={handleChange}
         />
-        <TextField
-          label="Category"
-          name="category"
-          value={formData.category}
-          fullWidth
-          margin="normal"
-          onChange={handleChange}
-        />
+        {/* Category Dropdown */}
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Category</InputLabel>
+          <Select
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            label="Category"
+          >
+            <MenuItem value="general">General</MenuItem>
+            <MenuItem value="technical">Technical</MenuItem>
+            <MenuItem value="billing">Billing</MenuItem>
+            <MenuItem value="support">Support</MenuItem>
+          </Select>
+        </FormControl>
+
+        {/* Sub-Category Dropdown */}
+        {formData.category !== "general" && (
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Sub-Category</InputLabel>
+            <Select
+              name="subCategory"
+              value={formData.subCategory}
+              onChange={handleChange}
+              label="Sub-Category"
+            >
+              {categoryOptions[formData.category]?.map((option, index) => (
+                <MenuItem key={index} value={option}>
+                  {option}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        )}
         <TextField
           label="Description"
           name="description"
