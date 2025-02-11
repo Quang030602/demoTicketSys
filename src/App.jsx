@@ -26,13 +26,49 @@ function App() {
       })
       .catch((error) => console.error("Error fetching tickets:", error));
   }, []);
-
+  
   const handleEditClick = (ticket) => {
     // Kiểm tra dữ liệu
     
     setTicketToEdit(ticket);
 
     setIsEditModalOpen(true);
+  };
+  const fetchAllTickets = async () => {
+    try {
+      const response = await fetch("http://localhost:4953/v1/tickets");
+      if (!response.ok) {
+        throw new Error("Failed to fetch tickets");
+      }
+      const data = await response.json();
+      setTickets(data); // Cập nhật danh sách ticket
+    } catch (error) {
+      console.error("Error fetching open tickets:", error);
+    }
+  };
+  const fetchOpenTickets = async () => {
+    try {
+      const response = await fetch("http://localhost:4953/v1/tickets/open");
+      if (!response.ok) {
+        throw new Error("Failed to fetch tickets");
+      }
+      const data = await response.json();
+      setTickets(data); // Cập nhật danh sách ticket
+    } catch (error) {
+      console.error("Error fetching open tickets:", error);
+    }
+  };
+  const fetchClosedTickets = async () => {
+    try {
+      const response = await fetch("http://localhost:4953/v1/tickets/closed");
+      if (!response.ok) {
+        throw new Error("Failed to fetch tickets");
+      }
+      const data = await response.json();
+      setTickets(data); // Cập nhật danh sách ticket
+    } catch (error) {
+      console.error("Error fetching open tickets:", error);
+    }
   };
   
   const handleUpdateTicket = (updatedTicket) => {
@@ -105,7 +141,11 @@ function App() {
       <CssBaseline />
       <Box sx={{ display: "flex", minHeight: "100vh" }}>
         <Header />
-        <Sidebar onCreateTicketClick={() => setIsCreateModalOpen(true)} />
+        <Sidebar onCreateTicketClick={() => setIsCreateModalOpen(true)} 
+          onFetchOpenTickets={fetchOpenTickets} 
+          onFetchClosedTickets={fetchClosedTickets} 
+          onFetchAllTickets={fetchAllTickets} />
+
         <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
           <TicketTable
             tickets={tickets}

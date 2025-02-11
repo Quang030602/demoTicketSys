@@ -8,14 +8,7 @@ const ViewTicketModal = ({ ticket, open, onClose }) => {
       <DialogTitle>Ticket Details</DialogTitle>
       <DialogContent>
         {ticket && (
-          <>
-            <TextField
-              label="ID"
-              value={ticket.id}
-              fullWidth
-              margin="normal"
-              InputProps={{ readOnly: true }}
-            />
+          <>            
             <TextField
               label="Full Name"
               value={ticket.fullName}

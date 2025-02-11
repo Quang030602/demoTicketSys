@@ -1,12 +1,14 @@
 // File: components/TicketTable.jsx
 import React from "react";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Typography } from "@mui/material";
-
+const truncateText = (text, maxLength) => {
+  return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+};
 const TicketTable = ({ tickets, onViewClick, onDeleteClick, onEditClick }) => {
   return (
     <TableContainer component={Paper}>
       <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold", textAlign: "center" }}>
-        All Tickets
+        Tickets
       </Typography>
       <Table>
         <TableHead>
@@ -15,6 +17,7 @@ const TicketTable = ({ tickets, onViewClick, onDeleteClick, onEditClick }) => {
             <TableCell>Email</TableCell>
             <TableCell>Category</TableCell> {/* Thêm trường Category */}
             <TableCell>Description</TableCell> {/* Thêm trường Description */}
+            <TableCell>Status</TableCell>
             <TableCell>Action</TableCell>
           </TableRow>
         </TableHead>
@@ -25,8 +28,12 @@ const TicketTable = ({ tickets, onViewClick, onDeleteClick, onEditClick }) => {
               <TableCell>{ticket.fullName}</TableCell> {/* Cập nhật từ fullname thành fullName */}
               <TableCell>{ticket.email}</TableCell>
               <TableCell>{ticket.category}</TableCell> {/* Hiển thị danh mục */}
-              <TableCell>{ticket.description}</TableCell> {/* Hiển thị mô tả */}
-              <TableCell>
+              <TableCell>{truncateText(ticket.description, 15)}</TableCell> {/* Hiển thị mô tả */}
+              <TableCell>{ticket.status}</TableCell>
+              <TableCell sx = {{display: 'flex',
+                                alignItems: 'center', 
+                                gap: 1,
+                                px: 1,}}>
                 <Button
                   variant="contained"
                   color="error"
