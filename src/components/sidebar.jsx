@@ -1,9 +1,9 @@
 // File: components/Sidebar.js
+import { Box, Button, Drawer, List, ListItem, ListItemText, Toolbar, Typography } from "@mui/material";
+import { lightBlue } from "@mui/material/colors";
 import React from "react";
-import { Drawer, Toolbar, Box, Typography, List, ListItem, ListItemText, Button } from "@mui/material";
-import { blue, blueGrey, green, lightBlue, red } from "@mui/material/colors";
 
-const Sidebar = ({ onCreateTicketClick, onFetchOpenTickets,onFetchClosedTickets,onFetchAllTickets }) => {
+const Sidebar = ({ onCreateTicketClick, setFilterStatus , filterStatus }) => {
   return (
     <Drawer
       variant="permanent"
@@ -15,38 +15,58 @@ const Sidebar = ({ onCreateTicketClick, onFetchOpenTickets,onFetchClosedTickets,
           boxSizing: "border-box", 
           backgroundColor: (theme) => theme.palette.background.default 
         }
-        
-        
       }}
     >
       <Toolbar />
-      <Box sx={{ overflow: "auto", padding: 2}}>
-        <Typography variant="h6" sx={{ mb: 2 ,color: lightBlue}}>
+      <Box sx={{ overflow: "auto", padding: 2 }}>
+        <Typography variant="h6" sx={{ mb: 2, color: lightBlue }}>
           Ticket List
         </Typography>
-        <List sx={{  border: "1px solid transparent",borderRadius :2 ,transition: "border 0.3s", "&:hover": { border: "1px solid lightBlue" } }}>
-          <ListItem button onClick={onFetchAllTickets} sx = {{borderRadius :'1px', "&:hover": { border: "1px solid green", borderRadius :2 }}}>
+        <List>
+          <ListItem 
+            button 
+            onClick={() => setFilterStatus("all")}
+            sx={{
+              borderRadius: 1, 
+              backgroundColor: filterStatus === "all" ? lightBlue[200] : "transparent",
+              "&:hover": { backgroundColor: lightBlue[100] }
+            }}
+          >
             <ListItemText primary="Tickets" />
           </ListItem>
-          <ListItem button onClick={onFetchOpenTickets} sx = {{borderRadius :'1px', "&:hover": { border: "1px solid green", borderRadius :2 }}}>
+          <ListItem 
+            button 
+            onClick={() => setFilterStatus("open")}
+            sx={{
+              borderRadius: 1, 
+              backgroundColor: filterStatus === "open" ? lightBlue[200] : "transparent",
+              "&:hover": { backgroundColor: lightBlue[100] }
+            }}
+          >
             <ListItemText primary="Open Tickets" />
           </ListItem>
-
-          <ListItem button onClick={onFetchClosedTickets} sx = {{borderRadius :'1px', "&:hover": { border: "1px solid green", borderRadius : 2 }}}>
+          <ListItem 
+            button 
+            onClick={() => setFilterStatus("closed")}
+            sx={{
+              borderRadius: 1, 
+              backgroundColor: filterStatus === "closed" ? lightBlue[200] : "transparent",
+              "&:hover": { backgroundColor: lightBlue[100] }
+            }}
+          >
             <ListItemText primary="Closed Tickets" />
           </ListItem>
         </List>
         <Button
           variant="contained"
-          
           fullWidth
-          sx={{ mt: 3, borderRadius: "10px", textTransform: "none",bg:blue }}
+          sx={{ mt: 3, borderRadius: "10px", textTransform: "none", backgroundColor: lightBlue }}
           onClick={onCreateTicketClick}
         >
           Create a Ticket
         </Button>
         <Typography variant="subtitle1" sx={{ mt: 3, color: "text.secondary" }}>
-          Account Roll: <strong>Customer</strong>
+          Account Role: <strong>Customer</strong>
         </Typography>
       </Box>
     </Drawer>
