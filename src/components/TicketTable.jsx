@@ -1,15 +1,77 @@
 // File: components/TicketTable.jsx
-import React from "react";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Typography } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Typography, TextField, InputAdornment,Input  } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import CloseIcon from "@mui/icons-material/Close";
 const truncateText = (text, maxLength) => {
   return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 };
-const TicketTable = ({ tickets, onViewClick, onDeleteClick, onEditClick }) => {
+const TicketTable = ({onViewClick, onDeleteClick, onEditClick }) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [tickets, setTickets] = useState([]);
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const response = await fetch(`http://localhost:4953/v1/tickets?search=${searchTerm}`);
+        const data = await response.json();
+        setTickets(data);
+      } catch (error) {
+        console.error("Error fetching tickets:", error);
+      }
+    };
+
+    fetchTickets();
+  }, [searchTerm]);
   return (
     <TableContainer component={Paper}>
       <Typography variant="h5" sx={{ mb: 2, fontWeight: "bold", textAlign: "center" }}>
         Tickets
       </Typography>
+      <TextField 
+        id="outlined-search" 
+        label="Search..." 
+        type="text" 
+        size='small' 
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon sx={{color:'black'}}/>
+            </InputAdornment>
+          ),
+          endAdornment: searchTerm && (
+            <InputAdornment position="end">
+              <CloseIcon 
+                fontSize='small'
+                sx={{color: 'black', cursor:'pointer'}}
+                onClick={() => setSearchTerm('')}
+              />
+            </InputAdornment>
+          )
+        }}
+        sx={{
+          minWidth:'200px',
+          maxWidth:'300px',
+          backgroundColor: 'white',
+          borderRadius: '5px',
+          '& label':{
+            color:'black',
+          },
+          '& label.Mui-focused':{
+            color:'black',
+          },
+          '& input':{
+            color:'black',
+          },
+          '& .MuiOutlinedInput-root':{
+            '& fieldset':{ borderColor:'black'},
+            '&:hover fieldset':{ borderColor:'black'},
+            '&.Mui-focused fieldset':{ borderColor:'black'}
+          },
+        }}
+      />
       <Table>
         <TableHead>
           <TableRow>
