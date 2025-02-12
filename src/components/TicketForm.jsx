@@ -45,23 +45,24 @@ const CreateTicketModal = ({ open, onClose,onAddTicket }) => {
       ...(name === "category" && value !== "general" ? { subCategory: "" } : {}),
     }));
   };
-
+  
   const handleAdd = async () => {
+    if (!formData.fullName || !formData.email || !formData.phone || !formData.category || !formData.description) {
+      alert("Vui lòng điền đầy đủ thông tin!");
+      return;
+    }
+  
     try {
       const response = await axios.post("http://localhost:4953/v1/tickets", formData, {
         headers: { "Content-Type": "application/json" },
       });
-      if (!formData.fullName || !formData.email || !formData.phone || !formData.category || !formData.description) {
-        alert("Vui lòng điền đầy đủ thông tin!");
-        return;
-      }
   
-      console.log("Sending ticket data:", response.data);
+      console.log("Ticket đã tạo thành công:", response.data);
+      
+      // Gọi lại API để cập nhật danh sách ticket mới nhất
+      onAddTicket();
   
-      // Gửi dữ liệu lên `App.jsx` thông qua `onAddTicket`
-      onAddTicket(response.data);
-  
-      // Reset form sau khi thêm thành công
+      // Reset form
       setFormData({
         fullName: "",
         email: "",
@@ -73,16 +74,15 @@ const CreateTicketModal = ({ open, onClose,onAddTicket }) => {
         file: null,
       });
   
-      // Đóng modal sau khi thêm
+      // Đóng modal
       onClose();
-  
     } catch (error) {
-      console.error("Error adding ticket:", error);
-      alert("Lỗi khi tạo ticket. Vui lòng thử lại!");
+      console.error("Lỗi khi tạo ticket:", error.response ? error.response.data : error.message);
+      alert("Không thể tạo ticket! Kiểm tra API.");
     }
   };
   
-  
+    
   
 
   const handleFileChange = (event) => {

@@ -53,9 +53,7 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
     setPage(1);
   }, [filterStatus]);
   
-  useEffect(() => {
-    fetchTickets();
-  }, [searchTerm, page, rowsPerPage, filterStatus]);
+  
   
   const handleDeleteTicket = async (id) => {
     try {
@@ -128,7 +126,7 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
       />
       <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
         <MenuItem onClick={() => { onViewClick(selectedTicket); setMenuAnchor(null); }}>View</MenuItem>
-        <MenuItem onClick={() => { handleEditTicket(selectedTicket); setMenuAnchor(null); }}>Edit</MenuItem>
+        <MenuItem onClick={() => { handleEditTicket(selectedTicket._id); setMenuAnchor(null); }}>Edit</MenuItem>
         <MenuItem onClick={() => { handleDeleteTicket(selectedTicket._id); setMenuAnchor(null); }}>Delete</MenuItem>
       </Menu>
     </TableContainer>
