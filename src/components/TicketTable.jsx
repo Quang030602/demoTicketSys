@@ -12,7 +12,7 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [tickets, setTickets] = useState([]);
   const [page, setPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(8);
   const [totalTickets, setTotalTickets] = useState(0);
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [statusAnchor, setStatusAnchor] = useState(null);
@@ -22,16 +22,25 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
   useEffect(() => {
     const fetchTickets = async () => {
       try {
-        const response = await fetch(`http://localhost:4953/v1/tickets?search=${searchTerm}`);
+        let url = `http://localhost:4953/v1/tickets?search=${searchTerm}`;
+        const response = await fetch(url);
         const data = await response.json();
-        setTickets(data);
+  
+        // Cập nhật danh sách tickets dựa trên phân trang
+        setTickets(Array.isArray(data) ? data.slice((page - 1) * rowsPerPage, page * rowsPerPage) : []);
+  
+        // Cập nhật số lượng totalTickets để pagination hoạt động đúng
+        setTotalTickets(data.length || 0);
+        
       } catch (error) {
         console.error("Error fetching tickets:", error);
+        setTickets([]);
       }
     };
-
+  
     fetchTickets();
-  }, [searchTerm]);
+  }, [searchTerm, page, rowsPerPage]);
+  
 
   const fetchTickets = async () => {
     try {
