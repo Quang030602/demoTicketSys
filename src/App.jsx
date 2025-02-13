@@ -20,10 +20,8 @@ function App() {
 
   const fetchTickets = async () => {
     try {
-      console.log("Gọi API lấy danh sách Ticket..."); // Debug xem API có được gọi không
       const response = await axios.get("http://localhost:4953/v1/tickets");
       
-      console.log("Dữ liệu từ API:", response.data); // Debug dữ liệu từ API
       
       setTickets(response.data);
     } catch (error) {
@@ -40,7 +38,6 @@ function App() {
         headers: { "Content-Type": "application/json" },
       });
   
-      console.log("Ticket đã tạo thành công:", response.data);
   
       // Cập nhật danh sách tickets ngay lập tức
       setTickets((prevTickets) => [...prevTickets, response.data]);
@@ -107,10 +104,8 @@ function App() {
             page={page}
             filterStatus={filterStatus}
             setFilterStatus={(status) => {
-              console.log("Chuyển mục:", status); // Debug chuyển mục
               setFilterStatus(status);
               setPage(1);
-              console.log("Set lại trang về 1"); // Kiểm tra setPage có chạy hay không
             }}
             onEditClick={handleEditClick}
           />

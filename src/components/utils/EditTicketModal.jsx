@@ -35,7 +35,6 @@ const EditTicketModal = ({ ticket, open, onClose, onSave }) => {
   };
 
   const handleSave = async () => {
-    console.log("ticket: ",ticket._id)
     if (!ticket?._id) {
       console.error("Error: Ticket ID is missing!");
       return;

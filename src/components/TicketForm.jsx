@@ -58,7 +58,6 @@ const CreateTicketModal = ({ open, onClose,onAddTicket }) => {
       });
   
       if (response.status === 201 || response.status === 200) { 
-        console.log("Ticket đã tạo thành công:", response.data);
   
         onAddTicket(response.data); // Gọi App.jsx để cập nhật danh sách ticket
   

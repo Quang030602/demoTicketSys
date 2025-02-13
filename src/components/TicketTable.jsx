@@ -17,51 +17,63 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [statusAnchor, setStatusAnchor] = useState(null);
   const [selectedTicket, setSelectedTicket] = useState(null);
-  
-
-  useEffect(() => {
-    const fetchTickets = async () => {
-      try {
-        let url = `http://localhost:4953/v1/tickets?search=${searchTerm}`;
-        const response = await fetch(url);
-        const data = await response.json();
-  
-        // Cập nhật danh sách tickets dựa trên phân trang
-        setTickets(Array.isArray(data) ? data.slice((page - 1) * rowsPerPage, page * rowsPerPage) : []);
-  
-        // Cập nhật số lượng totalTickets để pagination hoạt động đúng
-        setTotalTickets(data.length || 0);
-        
-      } catch (error) {
-        console.error("Error fetching tickets:", error);
-        setTickets([]);
-      }
-    };
-  
-    fetchTickets();
-  }, [searchTerm, page, rowsPerPage]);
-  
-
-  const fetchTickets = async () => {
+  const handleSearch = async () => {
     try {
-      
-      let url = "http://localhost:4953/v1/tickets";
-      if (filterStatus === "open" ) {url = "http://localhost:4953/v1/tickets/open";}
-      else if (filterStatus === "closed") {url = "http://localhost:4953/v1/tickets/closed";}
-      
+  
+      // Nếu searchTerm trống, gọi fetchTickets để lấy danh sách đầy đủ
+      if (!searchTerm.trim()) {
+        fetchTickets();
+        return;
+      }
+  
+      let url = `http://localhost:4953/v1/tickets?search=${searchTerm}`;
+  
       const response = await fetch(url);
       const data = await response.json();
-      setTickets(Array.isArray(data) ? data.slice((page - 1) * rowsPerPage, page * rowsPerPage) : []);
+  
+  
+      // Cập nhật danh sách tickets với kết quả tìm kiếm
+      setTickets(Array.isArray(data) ? data.slice(0, rowsPerPage) : []);
       setTotalTickets(data.length || 0);
+      
+      // Reset về trang 1 khi tìm kiếm
+      setPage(1);
+  
     } catch (error) {
       console.error("Error fetching tickets:", error);
       setTickets([]);
     }
   };
+  
+  
+
+  const fetchTickets = async () => {
+    // Nếu đang tìm kiếm, không gọi lại API lấy toàn bộ danh sách
+    if (searchTerm.trim()) return;
+  
+    try {
+      let url = "http://localhost:4953/v1/tickets";
+      if (filterStatus === "open") { url = "http://localhost:4953/v1/tickets/open"; }
+      else if (filterStatus === "closed") { url = "http://localhost:4953/v1/tickets/closed"; }
+  
+  
+      const response = await fetch(url);
+      const data = await response.json();
+  
+  
+      // Cập nhật danh sách tickets nếu không có tìm kiếm
+      setTickets(Array.isArray(data) ? data.slice((page - 1) * rowsPerPage, page * rowsPerPage) : []);
+      setTotalTickets(data.length || 0);
+  
+    } catch (error) {
+      console.error("Error fetching tickets:", error);
+      setTickets([]);
+    }
+  };
+  
   const handleStatusChange = async (status) => {
     if (!selectedTicket) return;
     try {
-      console.log("selected ticket ",selectedTicket )
       const response = await fetch(`http://localhost:4953/v1/tickets/${selectedTicket._id}/status`, {
         method: "PATCH",
         headers: {
@@ -84,9 +96,11 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
     setStatusAnchor(null);
   };
   useEffect(() => {
-    
+  if (!searchTerm.trim()) {
     fetchTickets();
-  }, [searchTerm, page, rowsPerPage, filterStatus]);
+  }
+}, [page, rowsPerPage, filterStatus]);
+
 
   const handleMenuClick = (event, ticket) => {
     setMenuAnchor(event.currentTarget);
@@ -101,9 +115,7 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
     setPage(1);
   }, [filterStatus]);
   
-  useEffect(() => {
-    console.log("Ticket Table cập nhật, danh sách mới:", tickets);
-  }, [tickets]);
+  
   
   const handleDeleteTicket = async (id) => {
     try {
@@ -122,7 +134,6 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
   };
 
   const handleEditTicket = (ticket) => {
-   console.log("Ticket được chọn để chỉnh sửa:", ticket);
   
   if (!ticket) {
     console.error("LỖI: Không tìm thấy dữ liệu ticket!");
@@ -143,59 +154,44 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
         <Typography variant="h5" sx={{ fontWeight: "bold" }}>
           Tickets
         </Typography>
-        <TextField 
-          id="outlined-search" 
-          label="Search..." 
-          type="text" 
-          size='small' 
-          value={searchTerm}
-          onChange={(e) => {
-            setSearchTerm(e.target.value);
-            setPage(1); // Reset page to 1 when search input changes
-          }}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start" sx={{ mr: 1 }}>
-                <SearchIcon sx={{color:'black'}}/>
-              </InputAdornment>
-            ),
-            endAdornment: searchTerm ? (
-              <InputAdornment position="end">
-                <CloseIcon 
-                  fontSize='small'
-                  sx={{color: 'black', cursor:'pointer'}}
-                  onClick={() => {
-                    setSearchTerm('');
-                    setPage(1);
-                  }}
-                />
-              </InputAdornment>
-            ) : null
-          }}
-          sx={{
-            minWidth:'250px',
-            maxWidth:'350px',
-            backgroundColor: 'white',
-            borderRadius: '5px',
-            
-            m:1,
-            '& label':{
-              color:'black',
-            },
-            '& label.Mui-focused':{
-              color:'black',
-            },
-            '& input':{
-              color:'black',
-              padding: '10px 14px',
-            },
-            '& .MuiOutlinedInput-root':{
-              '& fieldset':{ borderColor:'black'},
-              '&:hover fieldset':{ borderColor:'black'},
-              '&.Mui-focused fieldset':{ borderColor:'black'}
-            },
-          }}
-        />
+        <Box sx={{ display: 'flex', gap: 1 }}>
+      <TextField 
+        id="outlined-search"
+        label="Search..."
+        type="text"
+        size='small'
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon sx={{ color: 'black' }} />
+            </InputAdornment>
+          ),
+          endAdornment: searchTerm ? (
+            <InputAdornment position="end">
+              <CloseIcon 
+                fontSize='small'
+                sx={{ color: 'black', cursor: 'pointer' }}
+                onClick={() => setSearchTerm('')}
+              />
+            </InputAdornment>
+          ) : null
+        }}
+        sx={{
+          minWidth: '250px',
+          maxWidth: '350px',
+          backgroundColor: 'white',
+          borderRadius: '5px',
+          p:1,       
+          ml:'auto'
+        }}
+      />
+      {/* Nút tìm kiếm */}
+      <Button variant="contained" color="primary" onClick={handleSearch}>
+        Tìm kiếm
+      </Button>
+    </Box>
       </Box>
       <Table>      
         <TableHead>
