@@ -20,32 +20,55 @@ function App() {
 
   const fetchTickets = async () => {
     try {
-      const response = await axios.get("http://localhost:4953/v1/tickets"); // Gọi lại API để lấy danh sách mới
-      setTickets(response.data); // Cập nhật danh sách tickets
-      console.log("res data ",tickets)
+      console.log("Gọi API lấy danh sách Ticket..."); // Debug xem API có được gọi không
+      const response = await axios.get("http://localhost:4953/v1/tickets");
+      
+      console.log("Dữ liệu từ API:", response.data); // Debug dữ liệu từ API
+      
+      setTickets(response.data);
     } catch (error) {
       console.error("Lỗi khi tải danh sách ticket:", error.response ? error.response.data : error.message);
-      alert("Không thể tải danh sách ticket mới!");
     }
   };
   
+  
   // Hàm thêm ticket và gọi lại API
-  const handleAddTicket = async () => {
-    await fetchTickets(); // Gọi lại API sau khi thêm ticket
+  const handleAddTicket = async (newTicket) => {
+    try {
+      // Gọi API để thêm ticket mới
+      const response = await axios.get("http://localhost:4953/v1/tickets", newTicket, {
+        headers: { "Content-Type": "application/json" },
+      });
+  
+      console.log("Ticket đã tạo thành công:", response.data);
+  
+      // Cập nhật danh sách tickets ngay lập tức
+      setTickets((prevTickets) => [...prevTickets, response.data]);
+  
+      // Gọi lại API để đảm bảo danh sách luôn mới nhất
+      fetchTickets();
+  
+    } catch (error) {
+      console.error("Lỗi khi thêm ticket:", error.response ? error.response.data : error.message);
+    }
   };
   
+  
+  
+  
+  
   const handleEditClick = (ticket) => {
-    if (!ticket || !ticket.id) {
+    if (!ticket || !ticket._id) {
       console.error("Invalid ticket data:", ticket);
       return;
     }
-    setTicketToEdit(ticket);
+    setTicketToEdit(ticket); // Lưu thông tin ticket cần chỉnh sửa
     setIsEditModalOpen(true);
   };
   
   
-  useEffect(() => {
-     
+  
+  useEffect(() => {     
     fetchTickets();
   }, []);
   
@@ -57,20 +80,15 @@ function App() {
         ticket._id === updatedTicket._id ? updatedTicket : ticket
       )
     );
+    fetchTickets();
   };
 
   useEffect(() => {
-    console.log("Filter status thay đổi:", filterStatus);
-    console.log("Reset lại page về 1");
+    
     setPage(1);
   }, [filterStatus]);
   
-  useEffect(() => {
-    console.log("Trang hiện tại:", page);
-  }, [page]);
-  useEffect(() => {
-    setPage(1); // Reset page to 1 when switching sidebar filter
-  }, [filterStatus]);
+  
   const handleViewClick = (ticket) => {
     setSelectedTicket(ticket);
     setIsViewModalOpen(true);

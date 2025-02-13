@@ -57,30 +57,37 @@ const CreateTicketModal = ({ open, onClose,onAddTicket }) => {
         headers: { "Content-Type": "application/json" },
       });
   
-      console.log("Ticket đã tạo thành công:", response.data);
-      
-      // Gọi lại API để cập nhật danh sách ticket mới nhất
-      onAddTicket();
+      if (response.status === 201 || response.status === 200) { 
+        console.log("Ticket đã tạo thành công:", response.data);
   
-      // Reset form
-      setFormData({
-        fullName: "",
-        email: "",
-        phone: "",
-        address: "",
-        category: "",
-        description: "",
-        subCategory: "",
-        file: null,
-      });
+        onAddTicket(response.data); // Gọi App.jsx để cập nhật danh sách ticket
   
-      // Đóng modal
-      onClose();
+        onClose(); // Đóng modal ngay sau khi thêm
+  
+        // Reset form sau khi thêm ticket thành công
+        setFormData({
+          fullName: "",
+          email: "",
+          phone: "",
+          address: "",
+          category: "",
+          description: "",
+          subCategory: "",
+          file: null,
+        });
+  
+      } else {
+        alert("Không thể tạo ticket! Kiểm tra API.");
+      }
+  
     } catch (error) {
       console.error("Lỗi khi tạo ticket:", error.response ? error.response.data : error.message);
       alert("Không thể tạo ticket! Kiểm tra API.");
     }
   };
+  
+  
+  
   
     
   

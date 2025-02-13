@@ -18,17 +18,17 @@ const EditTicketModal = ({ ticket, open, onClose, onSave }) => {
     support: ["Support Query C1", "Support Query C2"],
   };
   useEffect(() => {
-    
     if (ticket) {
       setFormData({
-        id: ticket.id,
         fullName: ticket.fullName || "",
         email: ticket.email || "",
-        category: ticket.category || "",
+        category: ticket.category || "general",
+        subCategory: ticket.subCategory || "",
         description: ticket.description || "",
       });
     }
   }, [ticket]);
+  
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });

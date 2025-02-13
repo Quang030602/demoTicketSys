@@ -1,9 +1,9 @@
-// File: components/TicketTable.jsx
+import React, { useState, useEffect } from "react";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Typography, TextField, InputAdornment, Pagination, Box, IconButton, Menu, MenuItem } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import CloseIcon from "@mui/icons-material/Close";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import { IconButton, Menu, MenuItem, Pagination, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
-import React, { useEffect, useState } from "react";
-
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 const truncateText = (text, maxLength) => {
   return text && text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 };
@@ -17,6 +17,21 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
   const [menuAnchor, setMenuAnchor] = useState(null);
   const [statusAnchor, setStatusAnchor] = useState(null);
   const [selectedTicket, setSelectedTicket] = useState(null);
+  
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const response = await fetch(`http://localhost:4953/v1/tickets?search=${searchTerm}`);
+        const data = await response.json();
+        setTickets(data);
+      } catch (error) {
+        console.error("Error fetching tickets:", error);
+      }
+    };
+
+    fetchTickets();
+  }, [searchTerm]);
 
   const fetchTickets = async () => {
     try {
@@ -34,7 +49,31 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
       setTickets([]);
     }
   };
-
+  const handleStatusChange = async (status) => {
+    if (!selectedTicket) return;
+    try {
+      console.log("selected ticket ",selectedTicket )
+      const response = await fetch(`http://localhost:4953/v1/tickets/${selectedTicket._id}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status }),
+      });
+      if (response.ok) {
+        setTickets((prevTickets) =>
+          prevTickets.map((ticket) =>
+            ticket._id === selectedTicket._id ? { ...ticket, status } : ticket
+          )
+        );
+      } else {
+        console.error("Failed to update status");
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
+    setStatusAnchor(null);
+  };
   useEffect(() => {
     
     fetchTickets();
@@ -53,7 +92,9 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
     setPage(1);
   }, [filterStatus]);
   
-  
+  useEffect(() => {
+    console.log("Ticket Table cập nhật, danh sách mới:", tickets);
+  }, [tickets]);
   
   const handleDeleteTicket = async (id) => {
     try {
@@ -71,19 +112,81 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
     }
   };
 
-  const handleEditTicket = async (ticket) => {
+  const handleEditTicket = (ticket) => {
+   console.log("Ticket được chọn để chỉnh sửa:", ticket);
+  
+  if (!ticket) {
+    console.error("LỖI: Không tìm thấy dữ liệu ticket!");
+    return;
+  }
     try {
-      await onEditClick(ticket);
+      onEditClick(ticket); // Truyền toàn bộ đối tượng ticket thay vì chỉ ID
       fetchTickets();
     } catch (error) {
       console.error("Error editing ticket:", error);
     }
   };
+  
 
   return (
     <TableContainer component={Paper}>
       <Table>
         <TableHead>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+            Tickets
+          </Typography>
+          {/* Bọc Search vào Box và căn về phải */}
+          <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end' }}>
+            <TextField 
+              id="outlined-search" 
+              label="Search..." 
+              type="text" 
+              size='small' 
+              value={searchTerm}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                setPage(1); // Reset page to 1 when search input changes
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start" sx={{ mr: 1 }}>
+                    <SearchIcon sx={{ color: 'black' }} />
+                  </InputAdornment>
+                ),
+                endAdornment: searchTerm ? (
+                  <InputAdornment position="end">
+                    <CloseIcon 
+                      fontSize='small'
+                      sx={{ color: 'black', cursor: 'pointer' }}
+                      onClick={() => {
+                        setSearchTerm('');
+                        setPage(1);
+                      }}
+                    />
+                  </InputAdornment>
+                ) : null
+              }}
+              sx={{
+                minWidth: '250px',
+                maxWidth: '350px',
+                backgroundColor: 'white',
+                borderRadius: '5px',
+                m: 1,
+                justifyContent: 'flex-end',
+                '& label': { color: 'black' },
+                '& label.Mui-focused': { color: 'black' },
+                '& input': { color: 'black', padding: '10px 14px' },
+                '& .MuiOutlinedInput-root': {
+                  '& fieldset': { borderColor: 'black' },
+                  '&:hover fieldset': { borderColor: 'black' },
+                  '&.Mui-focused fieldset': { borderColor: 'black' }
+                },
+              }}
+            />
+          </Box>
+        </Box>
+
           <TableRow>
             <TableCell>Full Name</TableCell>
             <TableCell>Email</TableCell>
@@ -124,9 +227,15 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
         color="primary"
         sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}
       />
+      <Menu anchorEl={statusAnchor} open={Boolean(statusAnchor)} onClose={() => setStatusAnchor(null)}>
+        <MenuItem onClick={() => handleStatusChange("Open")}>Open</MenuItem>
+        <MenuItem onClick={() => handleStatusChange("Closed")}>Closed</MenuItem>
+        <MenuItem onClick={() => handleStatusChange("In Progress")}>In Progress</MenuItem>
+        <MenuItem onClick={() => handleStatusChange("Resolved")}>Resolved</MenuItem>
+      </Menu>    
       <Menu anchorEl={menuAnchor} open={Boolean(menuAnchor)} onClose={() => setMenuAnchor(null)}>
         <MenuItem onClick={() => { onViewClick(selectedTicket); setMenuAnchor(null); }}>View</MenuItem>
-        <MenuItem onClick={() => { handleEditTicket(selectedTicket._id); setMenuAnchor(null); }}>Edit</MenuItem>
+        <MenuItem onClick={() => { handleEditTicket(selectedTicket); setMenuAnchor(null); }}>Edit</MenuItem>
         <MenuItem onClick={() => { handleDeleteTicket(selectedTicket._id); setMenuAnchor(null); }}>Delete</MenuItem>
       </Menu>
     </TableContainer>
