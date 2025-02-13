@@ -139,63 +139,66 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
 
   return (
     <TableContainer component={Paper}>
-      <Table>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+          Tickets
+        </Typography>
+        <TextField 
+          id="outlined-search" 
+          label="Search..." 
+          type="text" 
+          size='small' 
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setPage(1); // Reset page to 1 when search input changes
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start" sx={{ mr: 1 }}>
+                <SearchIcon sx={{color:'black'}}/>
+              </InputAdornment>
+            ),
+            endAdornment: searchTerm ? (
+              <InputAdornment position="end">
+                <CloseIcon 
+                  fontSize='small'
+                  sx={{color: 'black', cursor:'pointer'}}
+                  onClick={() => {
+                    setSearchTerm('');
+                    setPage(1);
+                  }}
+                />
+              </InputAdornment>
+            ) : null
+          }}
+          sx={{
+            minWidth:'250px',
+            maxWidth:'350px',
+            backgroundColor: 'white',
+            borderRadius: '5px',
+            
+            m:1,
+            '& label':{
+              color:'black',
+            },
+            '& label.Mui-focused':{
+              color:'black',
+            },
+            '& input':{
+              color:'black',
+              padding: '10px 14px',
+            },
+            '& .MuiOutlinedInput-root':{
+              '& fieldset':{ borderColor:'black'},
+              '&:hover fieldset':{ borderColor:'black'},
+              '&.Mui-focused fieldset':{ borderColor:'black'}
+            },
+          }}
+        />
+      </Box>
+      <Table>      
         <TableHead>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-            Tickets
-          </Typography>
-          {/* Bọc Search vào Box và căn về phải */}
-          <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end' }}>
-            <TextField 
-              id="outlined-search" 
-              label="Search..." 
-              type="text" 
-              size='small' 
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setPage(1); // Reset page to 1 when search input changes
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start" sx={{ mr: 1 }}>
-                    <SearchIcon sx={{ color: 'black' }} />
-                  </InputAdornment>
-                ),
-                endAdornment: searchTerm ? (
-                  <InputAdornment position="end">
-                    <CloseIcon 
-                      fontSize='small'
-                      sx={{ color: 'black', cursor: 'pointer' }}
-                      onClick={() => {
-                        setSearchTerm('');
-                        setPage(1);
-                      }}
-                    />
-                  </InputAdornment>
-                ) : null
-              }}
-              sx={{
-                minWidth: '250px',
-                maxWidth: '350px',
-                backgroundColor: 'white',
-                borderRadius: '5px',
-                m: 1,
-                justifyContent: 'flex-end',
-                '& label': { color: 'black' },
-                '& label.Mui-focused': { color: 'black' },
-                '& input': { color: 'black', padding: '10px 14px' },
-                '& .MuiOutlinedInput-root': {
-                  '& fieldset': { borderColor: 'black' },
-                  '&:hover fieldset': { borderColor: 'black' },
-                  '&.Mui-focused fieldset': { borderColor: 'black' }
-                },
-              }}
-            />
-          </Box>
-        </Box>
-
           <TableRow>
             <TableCell>Full Name</TableCell>
             <TableCell>Email</TableCell>
