@@ -33,15 +33,17 @@ function App() {
   // Hàm thêm ticket và gọi lại API
   const handleAddTicket = async (newTicket) => {
     try {
+      // Create a payload excluding disallowed fields
+      const { _id, status, createdAt, updatedAt, _destroy, ...allowedFields } = newTicket;
+  
       // Gọi API để thêm ticket mới
-      const response = await axios.get("http://localhost:4953/v1/tickets", newTicket, {
+      const response = await axios.post("http://localhost:4953/v1/tickets", allowedFields, {
         headers: { "Content-Type": "application/json" },
       });
   
-  
       // Cập nhật danh sách tickets ngay lập tức
       setTickets((prevTickets) => [...prevTickets, response.data]);
-  
+      
       // Gọi lại API để đảm bảo danh sách luôn mới nhất
       fetchTickets();
   
@@ -99,7 +101,7 @@ function App() {
         <Sidebar onCreateTicketClick={() => setIsCreateModalOpen(true)} setFilterStatus={setFilterStatus} filterStatus={filterStatus} />
         <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
           <TicketTable
-            tickets={tickets}
+            tickets={tickets} // Pass the updated tickets state here
             onViewClick={handleViewClick}
             page={page}
             filterStatus={filterStatus}

@@ -133,15 +133,30 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
     }
   };
 
-  const handleEditTicket = (ticket) => {
+  const handleEditTicket = async (ticket) => {
+    if (!ticket) {
+      console.error("LỖI: Không tìm thấy dữ liệu ticket!");
+      return;
+    }
   
-  if (!ticket) {
-    console.error("LỖI: Không tìm thấy dữ liệu ticket!");
-    return;
-  }
     try {
-      onEditClick(ticket); // Truyền toàn bộ đối tượng ticket thay vì chỉ ID
-      fetchTickets();
+      const response = await fetch(`http://localhost:4953/v1/tickets/${ticket._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(ticket),
+      });
+  
+      if (response.ok) {
+        const updatedTicket = await response.json();
+        setTickets((prevTickets) =>
+          prevTickets.map((t) => (t._id === updatedTicket._id ? updatedTicket : t))
+        );
+        onEditClick(updatedTicket); // Truyền toàn bộ đối tượng ticket thay vì chỉ ID
+      } else {
+        console.error("Failed to update ticket");
+      }
     } catch (error) {
       console.error("Error editing ticket:", error);
     }

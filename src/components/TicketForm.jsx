@@ -51,34 +51,24 @@ const CreateTicketModal = ({ open, onClose,onAddTicket }) => {
       alert("Vui lòng điền đầy đủ thông tin!");
       return;
     }
-  
+
     try {
-      const response = await axios.post("http://localhost:4953/v1/tickets", formData, {
-        headers: { "Content-Type": "application/json" },
+      const { _id, status, createdAt, updatedAt, _destroy, ...allowedFields } = formData;
+      onAddTicket(allowedFields); // Gọi App.jsx để cập nhật danh sách ticket
+      onClose(); // Đóng modal ngay sau khi thêm
+
+      // Reset form sau khi thêm ticket thành công
+      setFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        address: "",
+        category: "",
+        description: "",
+        subCategory: "",
+        file: null,
       });
-  
-      if (response.status === 201 || response.status === 200) { 
-  
-        onAddTicket(response.data); // Gọi App.jsx để cập nhật danh sách ticket
-  
-        onClose(); // Đóng modal ngay sau khi thêm
-  
-        // Reset form sau khi thêm ticket thành công
-        setFormData({
-          fullName: "",
-          email: "",
-          phone: "",
-          address: "",
-          category: "",
-          description: "",
-          subCategory: "",
-          file: null,
-        });
-  
-      } else {
-        alert("Không thể tạo ticket! Kiểm tra API.");
-      }
-  
+
     } catch (error) {
       console.error("Lỗi khi tạo ticket:", error.response ? error.response.data : error.message);
       alert("Không thể tạo ticket! Kiểm tra API.");
