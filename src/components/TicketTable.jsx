@@ -198,7 +198,8 @@ const TicketTable = ({ filterStatus, onViewClick, onEditClick }) => {
           maxWidth: '350px',
           backgroundColor: 'white',
           borderRadius: '5px',
-          p:1,       
+          
+          m:1,      
           ml:'auto'
         }}
       />

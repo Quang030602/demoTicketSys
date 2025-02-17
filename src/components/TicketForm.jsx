@@ -55,6 +55,7 @@ const CreateTicketModal = ({ open, onClose,onAddTicket }) => {
     try {
       const { _id, status, createdAt, updatedAt, _destroy, ...allowedFields } = formData;
       onAddTicket(allowedFields); // Gọi App.jsx để cập nhật danh sách ticket
+      
       onClose(); // Đóng modal ngay sau khi thêm
 
       // Reset form sau khi thêm ticket thành công

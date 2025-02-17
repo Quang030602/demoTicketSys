@@ -24,6 +24,7 @@ function App() {
       
       
       setTickets(response.data);
+      console.log("danh sach tickets: ", response.data);
     } catch (error) {
       console.error("Lỗi khi tải danh sách ticket:", error.response ? error.response.data : error.message);
     }
@@ -43,16 +44,16 @@ function App() {
   
       // Cập nhật danh sách tickets ngay lập tức
       setTickets((prevTickets) => [...prevTickets, response.data]);
+      console.log("response.data: ", response.data);
       
       // Gọi lại API để đảm bảo danh sách luôn mới nhất
+    
       fetchTickets();
   
     } catch (error) {
       console.error("Lỗi khi thêm ticket:", error.response ? error.response.data : error.message);
     }
-  };
-  
-  
+  }; 
   
   
   
@@ -67,9 +68,9 @@ function App() {
   
   
   
-  useEffect(() => {     
-    fetchTickets();
-  }, []);
+  // useEffect(() => {     
+  //   fetchTickets();
+  // }, []);
   
   
 
