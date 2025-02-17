@@ -55,7 +55,7 @@ const CreateTicketModal = ({ open, onClose,onAddTicket }) => {
     try {
       const { _id, status, createdAt, updatedAt, _destroy, ...allowedFields } = formData;
       onAddTicket(allowedFields); // Gọi App.jsx để cập nhật danh sách ticket
-      
+
       onClose(); // Đóng modal ngay sau khi thêm
 
       // Reset form sau khi thêm ticket thành công
@@ -74,12 +74,7 @@ const CreateTicketModal = ({ open, onClose,onAddTicket }) => {
       console.error("Lỗi khi tạo ticket:", error.response ? error.response.data : error.message);
       alert("Không thể tạo ticket! Kiểm tra API.");
     }
-  };
-  
-  
-  
-  
-    
+  };    
   
 
   const handleFileChange = (event) => {

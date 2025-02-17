@@ -44,11 +44,10 @@ function App() {
   
       // Cập nhật danh sách tickets ngay lập tức
       setTickets((prevTickets) => [...prevTickets, response.data]);
-      console.log("response.data: ", response.data);
       
       // Gọi lại API để đảm bảo danh sách luôn mới nhất
     
-      fetchTickets();
+      
   
     } catch (error) {
       console.error("Lỗi khi thêm ticket:", error.response ? error.response.data : error.message);
@@ -64,23 +63,15 @@ function App() {
     }
     setTicketToEdit(ticket); // Lưu thông tin ticket cần chỉnh sửa
     setIsEditModalOpen(true);
-  };
-  
-  
-  
-  // useEffect(() => {     
-  //   fetchTickets();
-  // }, []);
-  
-  
+  };  
 
   const handleUpdateTicket = (updatedTicket) => {
-    setTickets((prevTickets) =>
-      prevTickets.map((ticket) =>
-        ticket._id === updatedTicket._id ? updatedTicket : ticket
+      setTickets((prevTickets) =>
+        prevTickets.map((ticket) =>          
+          ticket._id === updatedTicket._id ? updatedTicket : ticket
       )
     );
-    fetchTickets();
+    
   };
 
   useEffect(() => {
@@ -102,7 +93,8 @@ function App() {
         <Sidebar onCreateTicketClick={() => setIsCreateModalOpen(true)} setFilterStatus={setFilterStatus} filterStatus={filterStatus} />
         <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
           <TicketTable
-            tickets={tickets} // Pass the updated tickets state here
+            tickets={tickets}
+            setTickets={setTickets} // Pass the updated tickets state here
             onViewClick={handleViewClick}
             page={page}
             filterStatus={filterStatus}
@@ -114,9 +106,19 @@ function App() {
           />
         </Box>
       </Box>
-      <ViewTicketModal ticket={selectedTicket} open={isViewModalOpen} onClose={() => setIsViewModalOpen(false)} />
-      <CreateTicketModal open={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onAddTicket={handleAddTicket} />
-      <EditTicketModal ticket={ticketToEdit} open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} onSave={handleUpdateTicket} />
+      <ViewTicketModal 
+        ticket={selectedTicket} 
+        open={isViewModalOpen} 
+        onClose={() => setIsViewModalOpen(false)} />
+      <CreateTicketModal 
+        open={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)} 
+        onAddTicket={handleAddTicket} />
+      <EditTicketModal 
+        ticket={ticketToEdit} 
+        open={isEditModalOpen} 
+        onClose={() => setIsEditModalOpen(false)} 
+        onSave={handleUpdateTicket} />
     </>
   );
 }
