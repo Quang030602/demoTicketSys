@@ -3,7 +3,7 @@ import { Box, Button, Drawer, List, ListItem, ListItemText, Toolbar, Typography 
 import { lightBlue } from "@mui/material/colors";
 import React from "react";
 
-const Sidebar = ({ onCreateTicketClick, setFilterStatus , filterStatus }) => {
+const Sidebar = ({ onCreateTicketClick, setFilterStatus , filterStatus, user }) => {
   return (
     <Drawer
       variant="permanent"
@@ -66,7 +66,7 @@ const Sidebar = ({ onCreateTicketClick, setFilterStatus , filterStatus }) => {
           Create a Ticket
         </Button>
         <Typography variant="subtitle1" sx={{ mt: 3, color: "text.secondary" }}>
-          Account Role: <strong>Customer</strong>
+          Account Role: <strong>{user?.role || 'N/A'}</strong>
         </Typography>
       </Box>
     </Drawer>

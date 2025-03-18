@@ -1,9 +1,17 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import svgr from '@svgr/rollup';
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(), 
+    svgr({ 
+      svgrOptions: {
+        // svgr options
+      },
+    }),
+  ],
   server: {
     proxy: {
       '/v1': {
@@ -13,4 +21,9 @@ export default defineConfig({
       },
     },
   },
-})
+  resolve: {
+    alias: {
+      '@': '/src'
+    }
+  }
+});
