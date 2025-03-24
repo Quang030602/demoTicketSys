@@ -7,6 +7,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 const truncateText = (text, maxLength) => {
   return text && text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
 };
+import axios from "axios";
 
 const TicketTable = ({tickets,setTickets, filterStatus, onViewClick, onEditClick }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -27,9 +28,9 @@ const TicketTable = ({tickets,setTickets, filterStatus, onViewClick, onEditClick
       }
   
       let url = `http://localhost:4953/v1/tickets?search=${searchTerm}`;
-  
-      const response = await fetch(url);
-      const data = await response.json();
+
+      const response = await axios.get(url);
+      const data = response.data;
   
   
       // Cập nhật danh sách tickets với kết quả tìm kiếm
@@ -50,13 +51,16 @@ const TicketTable = ({tickets,setTickets, filterStatus, onViewClick, onEditClick
     // Nếu đang tìm kiếm, không gọi lại API lấy toàn bộ danh sách
     if (searchTerm.trim()) return;
   
-    try {
+    try {  
+
       let url = "http://localhost:4953/v1/tickets";
-      if (filterStatus === "open") { url = "http://localhost:4953/v1/tickets/open"; }
-      else if (filterStatus === "closed") { url = "http://localhost:4953/v1/tickets/closed"; }  
-  
-      const response = await fetch(url);
-      const data = await response.json();  
+      
+      if (filterStatus === "open") { url = "http://localhost:4953/v1/tickets/open"; } 
+      else if (filterStatus === "closed") { url = "http://localhost:4953/v1/tickets/closed"; }
+      
+      const response = await axios.get(url);
+      const data = response.data;
+      
   
       // Cập nhật danh sách tickets nếu không có tìm kiếm
       setTickets(Array.isArray(data) ? data.slice((page - 1) * rowsPerPage, page * rowsPerPage) : []);
@@ -74,14 +78,18 @@ const TicketTable = ({tickets,setTickets, filterStatus, onViewClick, onEditClick
 
   const handleStatusChange = async (status) => {
     if (!selectedTicket) return;
-    try {
-      const response = await fetch(`http://localhost:4953/v1/tickets/${selectedTicket._id}/status`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ status }),
-      });
+    try {  
+
+      const response = await axios.patch(
+        `http://localhost:4953/v1/tickets/${selectedTicket._id}/status`,
+        { status }, // body
+        {
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
       if (response.ok) {
         setTickets((prevTickets) =>
           prevTickets.map((ticket) =>
@@ -120,9 +128,7 @@ const TicketTable = ({tickets,setTickets, filterStatus, onViewClick, onEditClick
   
   const handleDeleteTicket = async (id) => {
     try {
-      const response = await fetch(`http://localhost:4953/v1/tickets/${id}`, {
-        method: "DELETE",
-      });
+      const response = await axios.delete(`http://localhost:4953/v1/tickets/${id}`);
 
       if (response.ok) {
         fetchTickets();
