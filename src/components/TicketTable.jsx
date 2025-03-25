@@ -78,19 +78,20 @@ const TicketTable = ({tickets,setTickets, filterStatus, onViewClick, onEditClick
 
   const handleStatusChange = async (status) => {
     if (!selectedTicket) return;
-    try {  
-
+  
+    try {
       const response = await axios.patch(
         `http://localhost:4953/v1/tickets/${selectedTicket._id}/status`,
-        { status }, // body
+        { status },
         {
           headers: {
             "Content-Type": "application/json"
           }
         }
       );
-
-      if (response.ok) {
+  
+      if (response.status === 200 || response.status === 204) {
+        // Cập nhật ngay trên giao diện mà không cần fetch lại
         setTickets((prevTickets) =>
           prevTickets.map((ticket) =>
             ticket._id === selectedTicket._id ? { ...ticket, status } : ticket
@@ -102,8 +103,10 @@ const TicketTable = ({tickets,setTickets, filterStatus, onViewClick, onEditClick
     } catch (error) {
       console.error("Error updating status:", error);
     }
+  
     setStatusAnchor(null);
   };
+  
   useEffect(() => {
   if (!searchTerm.trim()) {
     fetchTickets();
@@ -129,9 +132,9 @@ const TicketTable = ({tickets,setTickets, filterStatus, onViewClick, onEditClick
   const handleDeleteTicket = async (id) => {
     try {
       const response = await axios.delete(`http://localhost:4953/v1/tickets/${id}`);
-
-      if (response.ok) {
-        fetchTickets();
+      if (response.status === 200) {
+        setTickets(prev => prev.filter(ticket => ticket._id !== id));
+        setTotalTickets(prev => prev - 1);
       } else {
         console.error("Failed to delete ticket");
       }
@@ -139,6 +142,7 @@ const TicketTable = ({tickets,setTickets, filterStatus, onViewClick, onEditClick
       console.error("Error deleting ticket:", error);
     }
   };
+  
 
   const handleEditTicket = async (ticket) => {    
     onEditClick(ticket);
