@@ -11,11 +11,28 @@ const initialState = {
 // Các hành động gọi API (bất đồng bộ) và cập nhật dữ liệu vào Redux
 // dùng Middleware createAsyncThunk đi kèm với extraReducers
 
-export const loginUserAPI = createAsyncThunk (
-  'user/loginUserAPI',
-  async (data) => {
-    const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/users/login`, data)
-    return response.data
+export const loginUserAPI = createAsyncThunk(
+  "user/loginUserAPI",
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await authorizedAxiosInstance.post(
+        `${API_ROOT}/v1/users/login`,
+        data
+      );
+
+      // ✅ Debug response từ server
+      console.log("Login Response:", response.data);
+
+      // ✅ Kiểm tra nếu userId không tồn tại
+      if (!response.data?.userId) {
+        throw new Error("userId is missing from response");
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error("Login API Error:", error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || error.message);
+    }
   }
 )
 

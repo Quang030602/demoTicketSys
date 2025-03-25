@@ -32,16 +32,39 @@ function TicketSystem() {
 
   const handleAddTicket = async (newTicket) => {
     try {
-      const { _id, status, createdAt, updatedAt, _destroy, ...allowedFields } = newTicket;
-      const response = await axios.post("http://localhost:4953/v1/tickets", allowedFields, {
-        headers: { "Content-Type": "application/json" },
-      });
+      const userId = localStorage.getItem("userId");
+      if (!userId || typeof userId !== "string") {
+        console.error("Lỗi: userId không hợp lệ!", userId);
+        alert("Lỗi: Không tìm thấy userId. Vui lòng đăng nhập lại!");
+        return;
+      }
+      console.log("✅ userId trước khi gửi:", userId);
+      console.log("typeof userId",typeof userId)
+      const { _id, status, createdAt, updatedAt, _destroy,  ...allowedFields } = newTicket; // ❌ Bỏ `userId`
+      const ticketData = { ...allowedFields, userId: String(userId) };
+      
+      console.log("allowedFields: ", ticketData.userId);
+      const response = await axios.post(
+        "http://localhost:4953/v1/tickets",
+        ticketData, // ✅ Không gửi userId
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true, // ✅ Đảm bảo gửi token trong cookies
+        }
+      );
+  
       setTickets((prevTickets) => [...prevTickets, response.data]);
     } catch (error) {
-      console.error("Lỗi khi thêm ticket:", error.response ? error.response.data : error.message);
+      console.error(
+        "Lỗi khi thêm ticket:",
+        error.response ? error.response.data : error.message
+      );
+      alert(`Lỗi tạo ticket: ${error.response?.data?.message || "Không thể kết nối!"}`);
     }
-  };
-
+  }; 
+  
+  
+  
   const handleEditClick = (ticket) => {
     if (!ticket || !ticket._id) {
       console.error("Invalid ticket data:", ticket);

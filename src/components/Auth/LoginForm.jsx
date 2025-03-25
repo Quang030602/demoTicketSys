@@ -34,13 +34,22 @@ function LoginForm() {
   const verifiedEmail = searchParams.get('verifiedEmail');
   const submitLogIn = (data) => {
     const { email, password } = data;
+    
     toast.promise(
-      dispatch(loginUserAPI({ email, password })),
-      { pending: 'Logging in...', success: 'Logged in successfully!', error: 'Failed to login!' }
-    ).then(res => {
-      if (!res.error) navigate('/');
-    });
+      dispatch(loginUserAPI({ email, password }))
+        .then(res => {
+          if (!res.error) {
+            // ✅ Lưu userId vào localStorage
+            localStorage.setItem("userId", res.payload.userId);
+            console.log("userId: ", res.payload.userId);
+  
+            navigate('/'); // ✅ Chuyển hướng sau khi đăng nhập thành công
+          }
+        }),
+      { pending: "Logging in...", success: "Logged in successfully!", error: "Failed to login!" }
+    );
   };
+  
 
   return (
     <form onSubmit={handleSubmit(submitLogIn)}>
