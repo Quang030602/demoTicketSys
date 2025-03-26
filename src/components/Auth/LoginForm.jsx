@@ -41,7 +41,7 @@ function LoginForm() {
           if (!res.error) {
             // ✅ Lưu userId vào localStorage
             localStorage.setItem("userId", res.payload.userId);
-            console.log("userId: ", res.payload.userId);
+            //console.log("userId: ", res.payload.userId);
   
             navigate('/'); // ✅ Chuyển hướng sau khi đăng nhập thành công
           }

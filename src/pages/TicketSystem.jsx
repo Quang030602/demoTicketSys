@@ -22,9 +22,11 @@ function TicketSystem() {
   const user = useSelector(selectCurrentUser);
   const fetchTickets = async () => {
     try {
-      const response = await axios.get("http://localhost:4953/v1/tickets");
+      const response = await axios.get("http://localhost:4953/v1/tickets",{
+        withCredentials: true // 🔥 Quan trọng để gửi cookie kèm request
+      });
       setTickets(response.data);
-      console.log("danh sach tickets: ", response.data);
+      //console.log("danh sach tickets: ", response.data);
     } catch (error) {
       console.error("Lỗi khi tải danh sách ticket:", error.response ? error.response.data : error.message);
     }
@@ -38,12 +40,12 @@ function TicketSystem() {
         alert("Lỗi: Không tìm thấy userId. Vui lòng đăng nhập lại!");
         return;
       }
-      console.log("✅ userId trước khi gửi:", userId);
-      console.log("typeof userId",typeof userId)
+      //console.log("✅ userId trước khi gửi:", userId);
+      //console.log("typeof userId",typeof userId)
       const { _id, status, createdAt, updatedAt, _destroy,  ...allowedFields } = newTicket; // ❌ Bỏ `userId`
       const ticketData = { ...allowedFields, userId: String(userId) };
       
-      console.log("allowedFields: ", ticketData.userId);
+      //console.log("allowedFields: ", ticketData.userId);
       const response = await axios.post(
         "http://localhost:4953/v1/tickets",
         ticketData, // ✅ Không gửi userId

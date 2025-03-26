@@ -28,12 +28,16 @@ export const loginUserAPI = async (userData) => {
       );
   
       // ✅ Debug dữ liệu trả về từ server
-      console.log("Login Response:", response.data);
+      //console.log("Login Response:", response.data);
   
       return response.data; // ✅ Trả về userId, accessToken,...
     } catch (error) {
       console.error("Login API Error:", error.response?.data || error.message);
       throw new Error(error.response?.data?.message || "Login failed!");
     }
-  };
+};
   
+export const logoutUserAPI = async () => {
+const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/users/logout`)
+return response.data
+}

@@ -58,7 +58,9 @@ const TicketTable = ({tickets,setTickets, filterStatus, onViewClick, onEditClick
       if (filterStatus === "open") { url = "http://localhost:4953/v1/tickets/open"; } 
       else if (filterStatus === "closed") { url = "http://localhost:4953/v1/tickets/closed"; }
       
-      const response = await axios.get(url);
+      const response = await axios.get(url,{
+        withCredentials: true // ✅ Gửi kèm cookie
+      });
       const data = response.data;
       
   

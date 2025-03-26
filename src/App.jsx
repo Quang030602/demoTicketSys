@@ -5,6 +5,7 @@ import Auth from './components/Auth/Auth';
 import AccountVerification from './components/Auth/AccountVerification';
 import { useSelector } from 'react-redux';
 import { selectCurrentUser } from './redux/user/userSlice';
+import { useAuth } from './utils/useAuth';
 
 const ProtectedRoute = ({ user }) => {
   if (!user) return <Navigate to='/login' replace={true} />;
@@ -13,7 +14,7 @@ const ProtectedRoute = ({ user }) => {
 
 function App() {
   const currentUser = useSelector(selectCurrentUser);
-
+  useAuth()
   return (
     <Routes>
       <Route

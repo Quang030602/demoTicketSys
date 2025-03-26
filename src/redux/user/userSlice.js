@@ -21,7 +21,7 @@ export const loginUserAPI = createAsyncThunk(
       );
 
       // ✅ Debug response từ server
-      console.log("Login Response:", response.data);
+      //console.log("Login Response:", response.data);
 
       // ✅ Kiểm tra nếu userId không tồn tại
       if (!response.data?.userId) {
@@ -36,11 +36,11 @@ export const loginUserAPI = createAsyncThunk(
   }
 )
 
-export const logoutUserAPI = createAsyncThunk (
+export const logoutUserAPI = createAsyncThunk(
   'user/logoutUserAPI',
   async (showSuccessMessage = true) => {
     const response = await authorizedAxiosInstance.delete(`${API_ROOT}/v1/users/logout`)
-    if (showSuccessMessage ) {
+    if (showSuccessMessage) {
       toast.success('Logout successfully!', { theme: 'colored' })
     }
     return response.data
