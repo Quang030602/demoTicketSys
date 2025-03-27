@@ -32,7 +32,7 @@ function TicketSystem() {
     }
   };
 
-  const handleAddTicket = async (newTicket) => {
+  const handleAddTicket = async (formData) => {
     try {
       const userId = localStorage.getItem("userId");
       if (!userId || typeof userId !== "string") {
@@ -40,18 +40,15 @@ function TicketSystem() {
         alert("Lỗi: Không tìm thấy userId. Vui lòng đăng nhập lại!");
         return;
       }
-      //console.log("✅ userId trước khi gửi:", userId);
-      //console.log("typeof userId",typeof userId)
-      const { _id, status, createdAt, updatedAt, _destroy,  ...allowedFields } = newTicket; // ❌ Bỏ `userId`
-      const ticketData = { ...allowedFields, userId: String(userId) };
-      
-      //console.log("allowedFields: ", ticketData.userId);
+  
+      formData.append("userId", String(userId)); // Thêm userId vào FormData
+  
       const response = await axios.post(
         "http://localhost:4953/v1/tickets",
-        ticketData, // ✅ Không gửi userId
+        formData, // Gửi FormData
         {
-          headers: { "Content-Type": "application/json" },
-          withCredentials: true, // ✅ Đảm bảo gửi token trong cookies
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true, // Đảm bảo gửi token trong cookies
         }
       );
   
@@ -63,8 +60,7 @@ function TicketSystem() {
       );
       alert(`Lỗi tạo ticket: ${error.response?.data?.message || "Không thể kết nối!"}`);
     }
-  }; 
-  
+  };
   
   
   const handleEditClick = (ticket) => {

@@ -18,7 +18,7 @@ const VisuallyHiddenInput = styled("input")({
   width: 1,
 });
 
-const CreateTicketModal = ({ open, onClose,onAddTicket }) => {
+const CreateTicketModal = ({ open, onClose, onAddTicket }) => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -50,13 +50,25 @@ const CreateTicketModal = ({ open, onClose,onAddTicket }) => {
       alert("Vui lòng điền đầy đủ thông tin!");
       return;
     }
-
+  
     try {
-      const { _id, status, createdAt, updatedAt, _destroy, ...allowedFields } = formData;
-      onAddTicket(allowedFields); // Gọi App.jsx để cập nhật danh sách ticket
-
+      const formDataToSend = new FormData();
+      formDataToSend.append("fullName", formData.fullName);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("phone", formData.phone);
+      formDataToSend.append("address", formData.address);
+      formDataToSend.append("description", formData.description);
+      formDataToSend.append("category", formData.category);
+      formDataToSend.append("subCategory", formData.subCategory);
+      if (formData.file) {
+        formDataToSend.append("file", formData.file);
+      }  
+      
+      // Gọi API để tạo ticket
+      await onAddTicket(formDataToSend);
+  
       onClose(); // Đóng modal ngay sau khi thêm
-
+  
       // Reset form sau khi thêm ticket thành công
       setFormData({
         fullName: "",
@@ -68,18 +80,22 @@ const CreateTicketModal = ({ open, onClose,onAddTicket }) => {
         subCategory: "",
         file: null,
       });
-
     } catch (error) {
       console.error("Lỗi khi tạo ticket:", error.response ? error.response.data : error.message);
       alert("Không thể tạo ticket! Kiểm tra API.");
     }
-  };    
+  };
   
-
   const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      console.log("File được chọn:", file.name, file.type, file.size);
+    } else {
+      console.log("Không có file được chọn.");
+    }
     setFormData((prevState) => ({
       ...prevState,
-      file: event.target.files[0],
+      file: file,
     }));
   };
 

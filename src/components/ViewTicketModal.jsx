@@ -1,6 +1,5 @@
-// File: components/ViewTicketModal.jsx
 import React from "react";
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Typography, Link } from "@mui/material";
 
 const ViewTicketModal = ({ ticket, open, onClose }) => {
   return (
@@ -50,6 +49,15 @@ const ViewTicketModal = ({ ticket, open, onClose }) => {
               margin="normal"
               InputProps={{ readOnly: true }}
             />
+            {/* Hiển thị file nếu có */}
+            {ticket.file && (
+              <Typography variant="body2" margin="normal">
+                Attached File:{" "}
+                <Link href={ticket.file} target="_blank" rel="noopener noreferrer">
+                  {ticket.originalFileName || "Download File"}
+                </Link>
+              </Typography>
+            )}
           </>
         )}
       </DialogContent>
