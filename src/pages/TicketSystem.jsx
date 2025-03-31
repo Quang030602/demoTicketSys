@@ -19,17 +19,50 @@ function TicketSystem() {
   const [ticketToEdit, setTicketToEdit] = useState(null);
   const [filterStatus, setFilterStatus] = useState("all");
   const [page, setPage] = useState(1);
+  const [totalTickets, setTotalTickets] = useState(0);
   const user = useSelector(selectCurrentUser);
-  const fetchTickets = async () => {
-    try {
-      const response = await axios.get("http://localhost:4953/v1/tickets",{
-        withCredentials: true // 🔥 Quan trọng để gửi cookie kèm request
-      });
-      setTickets(response.data);
-      //console.log("danh sach tickets: ", response.data);
-    } catch (error) {
-      console.error("Lỗi khi tải danh sách ticket:", error.response ? error.response.data : error.message);
+
+  useEffect(() => {
+    console.log("User data:", user); // Log the user data to check its structure
+    console.log("User ID:", user?.userRole); // Log the userId to check its value
+    if (!user) {
+      console.error("User data is not available. Please ensure the user is logged in.");
     }
+  }, [user]);
+
+  const fetchTickets = async (searchTerm = "", filterStatus = "all", page = 1, rowsPerPage = 8) => {
+    try {
+      let url = "http://localhost:4953/v1/tickets";
+  
+      if (searchTerm.trim()) {
+        url += `?search=${searchTerm}`;
+      } else if (filterStatus === "open") {
+        url = "http://localhost:4953/v1/tickets/open";
+      } else if (filterStatus === "closed") {
+        url = "http://localhost:4953/v1/tickets/closed";
+      }
+  
+      const response = await axios.get(url, {
+        withCredentials: true, // ✅ Send cookies
+      });
+      const data = response.data;
+  
+      setTickets(Array.isArray(data) ? data.slice((page - 1) * rowsPerPage, page * rowsPerPage) : []);
+      setTotalTickets(data.length || 0);
+    } catch (error) {
+      console.error("Error fetching tickets:", error);
+      setTickets([]);
+      setTotalTickets(0);
+    }
+  };
+  
+  useEffect(() => {
+    fetchTickets("", filterStatus, page, 8);
+  }, [filterStatus, page]);
+  
+  const handleSearch = async (searchTerm) => {
+    setPage(1);
+    await fetchTickets(searchTerm, filterStatus, 1, 8);
   };
 
   const handleAddTicket = async (formData) => {
@@ -80,12 +113,12 @@ function TicketSystem() {
     );
   };
 
-  useEffect(() => {
-    fetchTickets();
-    setPage(1);
-  }, [filterStatus]);
-
   const handleViewClick = (ticket) => {
+    setSelectedTicket(ticket);
+    setIsViewModalOpen(true);
+  };
+
+  const handleDoubleClick = (ticket) => {
     setSelectedTicket(ticket);
     setIsViewModalOpen(true);
   };
@@ -95,22 +128,23 @@ function TicketSystem() {
       <CssBaseline />
       <Box sx={{ display: "flex", minHeight: "100vh" }}>
         <Header />
-        <Sidebar onCreateTicketClick={() => setIsCreateModalOpen(true)} 
+        <Sidebar 
+          onCreateTicketClick={() => setIsCreateModalOpen(true)} 
           setFilterStatus={setFilterStatus} 
           filterStatus={filterStatus} 
-          user={user}
-          />
+          user={user} // Pass the user object to Sidebar
+        />
         <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
           <TicketTable
             tickets={tickets}
-            setTickets={setTickets}
+            totalTickets={totalTickets} // Pass totalTickets for pagination
+            onSearch={handleSearch} // Pass search handler
             onViewClick={handleViewClick}
+            onDoubleClick={handleDoubleClick}
             page={page}
+            rowsPerPage={8}
+            setPage={setPage}
             filterStatus={filterStatus}
-            setFilterStatus={(status) => {
-              setFilterStatus(status);
-              setPage(1);
-            }}
             onEditClick={handleEditClick}
           />
         </Box>
