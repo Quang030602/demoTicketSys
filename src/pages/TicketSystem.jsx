@@ -1,5 +1,5 @@
 import { Box, CssBaseline } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import Header from "../components/header";
 import Sidebar from "../components/sidebar";
 import CreateTicketModal from "../components//TicketForm";
@@ -20,15 +20,56 @@ function TicketSystem() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [page, setPage] = useState(1);
   const [totalTickets, setTotalTickets] = useState(0);
+  const [searchTerm, setSearchTerm] = useState(""); 
+  const [rowsPerPage] = useState(8);
+  const [loading, setLoading] = useState(false);
+  const [allTicketsCache, setAllTicketsCache] = useState([]);
   const user = useSelector(selectCurrentUser);
   const userRole = localStorage.getItem("userRole");
+  
+  // Refs to prevent unnecessary API calls
+  const isInitialMount = useRef(true);
+  const previousFilterStatus = useRef(filterStatus);
+  const previousSearchTerm = useRef(searchTerm);
+  
   useEffect(() => {
     if (!user) {
       console.error("User data is not available. Please ensure the user is logged in.");
     }
   }, [user]);
 
-  const fetchTickets = async (searchTerm = "", filterStatus = "all", page = 1, rowsPerPage = 8) => {
+  // Apply filters and pagination from cache
+  const applyFiltersAndPagination = useCallback(() => {
+    if (allTicketsCache.length === 0) return;
+    
+    let filteredData = [...allTicketsCache];
+    
+    // Apply any client-side filtering if needed
+    if (searchTerm && filteredData.length > 0) {
+      const lowerSearchTerm = searchTerm.toLowerCase();
+      filteredData = filteredData.filter(ticket => 
+        ticket.fullName?.toLowerCase().includes(lowerSearchTerm) ||
+        ticket.email?.toLowerCase().includes(lowerSearchTerm) ||
+        ticket.description?.toLowerCase().includes(lowerSearchTerm) ||
+        ticket.category?.toLowerCase().includes(lowerSearchTerm)
+      );
+    }
+    
+    // Update total for pagination
+    setTotalTickets(filteredData.length);
+    
+    // Apply pagination
+    const paginatedData = filteredData.slice(
+      (page - 1) * rowsPerPage, 
+      page * rowsPerPage
+    );
+    
+    setTickets(paginatedData);
+  }, [allTicketsCache, page, rowsPerPage, searchTerm]);
+  
+  // Main fetch function
+  const fetchTickets = useCallback(async () => {
+    setLoading(true);
     try {
       let url = "http://localhost:4953/v1/tickets";
   
@@ -41,26 +82,59 @@ function TicketSystem() {
       }
   
       const response = await axios.get(url, {
-        withCredentials: true, // ✅ Send cookies
+        withCredentials: true,
       });
       const data = response.data;
-  
-      setTickets(Array.isArray(data) ? data.slice((page - 1) * rowsPerPage, page * rowsPerPage) : []);
-      setTotalTickets(data.length || 0);
+      
+      // Store full dataset in cache
+      setAllTicketsCache(Array.isArray(data) ? data : []);
+      
+      // Pagination is now handled separately in applyFiltersAndPagination
     } catch (error) {
       console.error("Error fetching tickets:", error);
+      setAllTicketsCache([]);
       setTickets([]);
       setTotalTickets(0);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [filterStatus, searchTerm]);
   
+  // Single useEffect to handle all data loading scenarios
   useEffect(() => {
-    fetchTickets("", filterStatus, page, 8);
-  }, [filterStatus, page]);
+    // Initial load
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      fetchTickets();
+      return;
+    }
+    
+    // Filter or search term changed - need to fetch from server
+    if (
+      previousFilterStatus.current !== filterStatus || 
+      previousSearchTerm.current !== searchTerm
+    ) {
+      previousFilterStatus.current = filterStatus;
+      previousSearchTerm.current = searchTerm;
+      fetchTickets();
+      return;
+    }
+    
+    // Just apply filters and pagination from cache for page changes
+    applyFiltersAndPagination();
+    
+  }, [fetchTickets, applyFiltersAndPagination, filterStatus, searchTerm, page]);
   
-  const handleSearch = async (searchTerm) => {
+  // Apply pagination after data is fetched
+  useEffect(() => {
+    if (allTicketsCache.length > 0) {
+      applyFiltersAndPagination();
+    }
+  }, [allTicketsCache, applyFiltersAndPagination]);
+  
+  const handleSearch = (term) => {
+    setSearchTerm(term);
     setPage(1);
-    await fetchTickets(searchTerm, filterStatus, 1, 8);
   };
 
   const handleAddTicket = async (formData) => {
@@ -72,18 +146,31 @@ function TicketSystem() {
         return;
       }
   
-      formData.append("userId", String(userId)); // Thêm userId vào FormData
+      formData.append("userId", String(userId));
   
       const response = await axios.post(
         "http://localhost:4953/v1/tickets",
-        formData, // Gửi FormData
+        formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-          withCredentials: true, // Đảm bảo gửi token trong cookies
+          withCredentials: true,
         }
       );
-  
-      setTickets((prevTickets) => [...prevTickets, response.data]);
+      
+      // Update cache with the new ticket
+      const newTicket = response.data;
+      setAllTicketsCache(prev => [newTicket, ...prev]);
+      
+      // Calculate new total number of tickets to determine page navigation
+      const newTotalTickets = allTicketsCache.length + 1;
+      const totalPages = Math.ceil(newTotalTickets / rowsPerPage);
+      
+      // If adding this ticket creates a new page, navigate to the first page
+      // Since we're adding to the beginning of the array, new tickets appear on page 1
+      setPage(1);
+      
+      // Apply pagination using cache - no need for another API call
+      applyFiltersAndPagination();
     } catch (error) {
       console.error(
         "Lỗi khi thêm ticket:",
@@ -92,7 +179,6 @@ function TicketSystem() {
       alert(`Lỗi tạo ticket: ${error.response?.data?.message || "Không thể kết nối!"}`);
     }
   };
-  
   
   const handleEditClick = (ticket) => {
     if (!ticket || !ticket._id) {
@@ -104,11 +190,13 @@ function TicketSystem() {
   };
 
   const handleUpdateTicket = (updatedTicket) => {
-    setTickets((prevTickets) =>
-      prevTickets.map((ticket) =>
+    // Update cache only and let the UI refresh from it
+    setAllTicketsCache(prevCache =>
+      prevCache.map(ticket =>
         ticket._id === updatedTicket._id ? updatedTicket : ticket
       )
     );
+    // No need to update tickets directly, applyFiltersAndPagination will handle it
   };
 
   const handleViewClick = (ticket) => {
@@ -120,7 +208,11 @@ function TicketSystem() {
     setSelectedTicket(ticket);
     setIsViewModalOpen(true);
   };
-
+  const handleTicketsUpdate = (updatedTickets) => {
+    setTickets(updatedTickets);
+    // Nếu cần cập nhật total, bạn có thể làm như sau
+    setTotalTickets(updatedTickets.length);
+  };
   return (
     <>
       <CssBaseline />
@@ -130,21 +222,22 @@ function TicketSystem() {
           onCreateTicketClick={() => setIsCreateModalOpen(true)} 
           setFilterStatus={setFilterStatus} 
           filterStatus={filterStatus} 
-          user={userRole} // Pass the user object to Sidebar
+          user={userRole}
         />
         <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
-          <TicketTable
-            tickets={tickets}
-            totalTickets={totalTickets} // Pass totalTickets for pagination
-            onSearch={handleSearch} // Pass search handler
-            onViewClick={handleViewClick}
-            onDoubleClick={handleDoubleClick}
-            page={page}
-            rowsPerPage={8}
-            setPage={setPage}
-            filterStatus={filterStatus}
-            onEditClick={handleEditClick}
-          />
+        <TicketTable
+          tickets={tickets}
+          totalTickets={totalTickets}
+          onSearch={handleSearch}
+          onViewClick={handleViewClick}
+          onDoubleClick={handleDoubleClick}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          setPage={setPage}
+          onEditClick={handleEditClick}
+          loading={loading}
+          onTicketsUpdate={handleTicketsUpdate} // Thêm prop này
+        />
         </Box>
       </Box>
       <ViewTicketModal 
