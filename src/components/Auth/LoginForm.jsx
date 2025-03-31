@@ -41,8 +41,9 @@ function LoginForm() {
           if (!res.error) {
             // ✅ Lưu userId vào localStorage
             localStorage.setItem("userId", res.payload.userId);
-            //console.log("userId: ", res.payload.userId);
-  
+            localStorage.setItem("userRole", res.payload.userRole);
+            console.log("userId: ", res.payload.userRole);
+            
             navigate('/'); // ✅ Chuyển hướng sau khi đăng nhập thành công
           }
         }),

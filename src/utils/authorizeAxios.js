@@ -21,6 +21,7 @@ authorizedAxiosInstance.interceptors.request.use((config) => {
   interceptorLoadingElements(true)
 
   const accessToken = localStorage.getItem('accessToken')
+  const role = localStorage.getItem('userRole')
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`
   }

@@ -21,10 +21,8 @@ function TicketSystem() {
   const [page, setPage] = useState(1);
   const [totalTickets, setTotalTickets] = useState(0);
   const user = useSelector(selectCurrentUser);
-
+  const userRole = localStorage.getItem("userRole");
   useEffect(() => {
-    console.log("User data:", user); // Log the user data to check its structure
-    console.log("User ID:", user?.userRole); // Log the userId to check its value
     if (!user) {
       console.error("User data is not available. Please ensure the user is logged in.");
     }
@@ -132,7 +130,7 @@ function TicketSystem() {
           onCreateTicketClick={() => setIsCreateModalOpen(true)} 
           setFilterStatus={setFilterStatus} 
           filterStatus={filterStatus} 
-          user={user} // Pass the user object to Sidebar
+          user={userRole} // Pass the user object to Sidebar
         />
         <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
           <TicketTable

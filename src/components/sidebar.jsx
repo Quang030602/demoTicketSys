@@ -66,7 +66,7 @@ const Sidebar = ({ onCreateTicketClick, setFilterStatus , filterStatus, user }) 
           Create a Ticket
         </Button>
         <Typography variant="subtitle1" sx={{ mt: 3, color: "text.secondary" }}>
-          Account Role: <strong>{user?.userRole || "Role not available"}</strong>
+          Account Role: <strong>{user || "Role not available"}</strong>
         </Typography>
       </Box>
     </Drawer>
