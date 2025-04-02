@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { QrReader } from 'react-qr-reader';
 import { 
   Box, 
@@ -32,17 +32,36 @@ const QRCodeScanner = () => {
   const [uploading, setUploading] = useState(false);
   const [uploadedImage, setUploadedImage] = useState(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [scanInProgress, setScanInProgress] = useState(false); // Add state to track when scan is in progress
   const fileInputRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
+  // Reset any ongoing scan when the component unmounts
+  useEffect(() => {
+    return () => {
+      setScanInProgress(false);
+      setScannerEnabled(false);
+    };
+  }, []);
+
   const processQRData = (qrData) => {
+    // Prevent multiple simultaneous login attempts
+    if (scanInProgress || isLoggingIn) {
+      console.log("Login already in progress, ignoring additional QR scan");
+      return;
+    }
+    
+    // Set scan in progress to prevent duplicate processing
+    setScanInProgress(true);
+    
     // Log original QR data for debugging
     console.log("Original QR Code Data:", qrData);    
   
-    if (!qrData.userId ) {
+    if (!qrData.userId) {
       setError('Invalid QR code format');
-      console.error("Invalid QR code format - missing userId or qrId");
+      console.error("Invalid QR code format - missing userId");
+      setScanInProgress(false);
       return;
     }
   
@@ -53,6 +72,9 @@ const QRCodeScanner = () => {
     
     console.log("Sending to API:", loginData);
     setIsLoggingIn(true);
+    
+    // Immediately disable the camera when starting login process
+    setScannerEnabled(false);
   
     toast.promise(
       dispatch(loginWithQRAPI(loginData))
@@ -71,8 +93,6 @@ const QRCodeScanner = () => {
             
             // Navigate to home page
             navigate('/');
-            setScannerEnabled(false);
-            setUploading(false);
           } else {
             // Handle the error case
             console.error("Login error details:", res.error);
@@ -87,7 +107,11 @@ const QRCodeScanner = () => {
           throw err; // Re-throw to trigger toast error
         })
         .finally(() => {
+          // Reset all states when login process is complete
           setIsLoggingIn(false);
+          setScanInProgress(false);
+          setScannerEnabled(false); // Ensure camera is turned off
+          setUploading(false);
         }),
       { 
         pending: "Logging in with QR code...", 
@@ -98,16 +122,26 @@ const QRCodeScanner = () => {
   };
 
   const handleScan = (result) => {
+    // Prevent multiple scans while one is being processed
+    if (scanInProgress || isLoggingIn) {
+      return;
+    }
+    
     if (result) {
       try {
         console.log("QR code scanned raw result:", result);
         console.log("QR code scanned text:", result?.text);
+        
+        // Immediately disable scanner to prevent multiple scans
+        setScannerEnabled(false);
         
         const qrData = JSON.parse(result?.text);
         processQRData(qrData);
       } catch (err) {
         setError('Could not parse QR code data');
         console.error("QR code parsing error:", err, "Raw data:", result?.text);
+        // Re-enable scanner if there was an error parsing the QR code
+        setScannerEnabled(true);
       }
     }
   };
@@ -120,6 +154,11 @@ const QRCodeScanner = () => {
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
+
+    // Prevent multiple uploads while one is being processed
+    if (scanInProgress || isLoggingIn) {
+      return;
+    }
 
     console.log("File selected:", file.name, file.type, file.size);
     setUploading(true);
@@ -154,17 +193,18 @@ const QRCodeScanner = () => {
             } catch (err) {
               setError('Invalid QR code format in image');
               console.error("QR code parsing error:", err, "Raw data:", code.data);
+              setUploading(false);
             }
           } else {
             setError('No QR code found in image');
             console.log("No QR code found in image");
+            setUploading(false);
           }
         } catch (err) {
           setError('Error processing image');
           console.error("Image processing error:", err);
+          setUploading(false);
         }
-        
-        setUploading(false);
       };
       
       img.onerror = () => {
@@ -190,6 +230,7 @@ const QRCodeScanner = () => {
     console.log("Resetting upload state");
     setUploadedImage(null);
     setUploading(false);
+    setScanInProgress(false);
     setError('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
@@ -222,9 +263,11 @@ const QRCodeScanner = () => {
             startIcon={<CameraAltIcon />}
             onClick={() => {
               setError('');
+              setScanInProgress(false);
               setScannerEnabled(true);
             }}
             fullWidth
+            disabled={scanInProgress || isLoggingIn}
           >
             Scan QR Code with Camera
           </Button>
@@ -238,6 +281,7 @@ const QRCodeScanner = () => {
               type="file"
               ref={fileInputRef}
               onChange={handleFileUpload}
+              disabled={scanInProgress || isLoggingIn}
             />
             <Button
               variant="outlined"
@@ -245,6 +289,7 @@ const QRCodeScanner = () => {
               startIcon={<UploadFileIcon />}
               fullWidth
               onClick={() => setError('')}
+              disabled={scanInProgress || isLoggingIn}
             >
               Upload QR Code Image
             </Button>
@@ -257,6 +302,7 @@ const QRCodeScanner = () => {
             onError={handleError}
             constraints={{ facingMode: 'environment' }}
             style={{ width: '100%' }}
+            scanDelay={1000} // Add a scan delay to reduce CPU usage
           />
           <IconButton 
             sx={{ 
@@ -268,7 +314,11 @@ const QRCodeScanner = () => {
                 bgcolor: 'rgba(255,255,255,0.9)',
               }
             }}
-            onClick={() => setScannerEnabled(false)}
+            onClick={() => {
+              setScannerEnabled(false);
+              setScanInProgress(false);
+            }}
+            disabled={scanInProgress || isLoggingIn}
           >
             <CloseIcon />
           </IconButton>
@@ -291,6 +341,7 @@ const QRCodeScanner = () => {
               }
             }}
             onClick={resetUpload}
+            disabled={scanInProgress || isLoggingIn}
           >
             <CloseIcon />
           </IconButton>
