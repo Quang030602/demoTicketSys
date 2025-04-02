@@ -35,7 +35,16 @@ export const loginUserAPI = createAsyncThunk(
     }
   }
 )
-
+export const loginWithQRAPI = createAsyncThunk('user/loginWithQR', async (qrData, { rejectWithValue }) => {
+  try {
+    console.log("QR Data API slice:", qrData); // Debug QR data
+    const response = await authorizedAxiosInstance.post(`${API_ROOT}/v1/users/login-with-qr`, qrData);
+    console.log("Login with QR Response:", response.data); // Debug response từ server
+    return response.data; // Trả về userId, userRole từ API
+  } catch (error) {
+    return rejectWithValue(error.response?.data || 'Login failed');
+  }
+});
 export const logoutUserAPI = createAsyncThunk(
   'user/logoutUserAPI',
   async (showSuccessMessage = true) => {
@@ -60,6 +69,9 @@ export const userSlice = createSlice({
   initialState,
   // reducers: Nơi xử lý dữ liệu đồng bộ
   reducers: {
+    setCurrentUser: (state, action) => {
+      state.currentUser = action.payload;
+    },
   },
   // extraReducers: Nơi xử lý dữ liệu bất đồng bộ
   extraReducers: (builder) => {
@@ -70,6 +82,12 @@ export const userSlice = createSlice({
 
       state.currentUser = user
     })
+    .addCase(loginWithQRAPI.fulfilled, (state, action) => {
+      state.user = action.payload;
+    })
+    .addCase(loginWithQRAPI.rejected, (state, action) => {
+      state.error = action.payload;
+    });
     builder.addCase(logoutUserAPI.fulfilled, (state) =>
     {
       state.currentUser = null
@@ -92,6 +110,7 @@ export const userSlice = createSlice({
 export const selectCurrentUser = (state) => {
   return state.user.currentUser
 }
+export const { setCurrentUser } = userSlice.actions
 // cái file này tên là activeBoardSlice nhưng chúng ta sẽ export 1 thứ tên là Reducer
 // export default activeBoardSlice.reducer
 export const userReducer = userSlice.reducer

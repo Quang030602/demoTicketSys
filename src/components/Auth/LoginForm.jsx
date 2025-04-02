@@ -1,4 +1,5 @@
-/* eslint-disable no-unused-vars */
+// ...existing code...
+import React from 'react';
 import { Link } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -24,6 +25,9 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useDispatch } from 'react-redux';
 import { loginUserAPI } from '../../redux/user/userSlice';
+import { Tab, Tabs } from '@mui/material';
+import QrCodeIcon from '@mui/icons-material/QrCode';
+import QRCodeScanner from '../utils/QRCodeScanner';
 
 function LoginForm() {
   const dispatch = useDispatch();
@@ -32,6 +36,12 @@ function LoginForm() {
   let [searchParams] = useSearchParams();
   const registeredEmail = searchParams.get('registeredEmail');
   const verifiedEmail = searchParams.get('verifiedEmail');
+  const [loginMethod, setLoginMethod] = React.useState(0);
+
+  const handleTabChange = (event, newValue) => {
+    setLoginMethod(newValue);
+  };
+
   const submitLogIn = (data) => {
     const { email, password } = data;
     
@@ -51,7 +61,6 @@ function LoginForm() {
     );
   };
   
-
   return (
     <form onSubmit={handleSubmit(submitLogIn)}>
       <Zoom in={true} style={{ transitionDelay: '200ms' }}>
@@ -86,57 +95,77 @@ function LoginForm() {
               </Alert>
             }
           </Box>
-          <Box sx={{ padding: '0 1em 1em 1em' }}>
-            <Box sx={{ marginTop: '1em' }}>
-              <TextField
-                // autoComplete="nope"
-                autoFocus
-                fullWidth
-                label="Enter Email..."
-                type="text"
-                variant="outlined"
-                error={!!errors['email']}
-                {...register('email', {
-                  required: FIELD_REQUIRED_MESSAGE,
-                  pattern: {
-                    value: EMAIL_RULE,
-                    message: EMAIL_RULE_MESSAGE
-                  }
-                })}
-              />
-              <FieldErrorAlert errors={errors} fieldName={'email'} />
-            </Box>
 
-            <Box sx={{ marginTop: '1em' }}>
-              <TextField
-                fullWidth
-                label="Enter Password..."
-                type="password"
-                variant="outlined"
-                error={!!errors['password']}
-                {...register('password', {
-                  required: FIELD_REQUIRED_MESSAGE,
-                  pattern: {
-                    value: PASSWORD_RULE,
-                    message: PASSWORD_RULE_MESSAGE
-                  }
-                })}
-              />
-              <FieldErrorAlert errors={errors} fieldName={'password'} />
+          <Tabs 
+            value={loginMethod} 
+            onChange={handleTabChange} 
+            centered
+            sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}
+          >
+            <Tab icon={<LockIcon />} label="Password" />
+            <Tab icon={<QrCodeIcon />} label="QR Code" />
+          </Tabs>
+
+          {loginMethod === 0 ? (
+            // Password login form
+            <Box sx={{ padding: '0 1em 1em 1em' }}>
+              <Box sx={{ marginTop: '1em' }}>
+                <TextField
+                  autoFocus
+                  fullWidth
+                  label="Enter Email..."
+                  type="text"
+                  variant="outlined"
+                  error={!!errors['email']}
+                  {...register('email', {
+                    required: FIELD_REQUIRED_MESSAGE,
+                    pattern: {
+                      value: EMAIL_RULE,
+                      message: EMAIL_RULE_MESSAGE
+                    }
+                  })}
+                />
+                <FieldErrorAlert errors={errors} fieldName={'email'} />
+              </Box>
+
+              <Box sx={{ marginTop: '1em' }}>
+                <TextField
+                  fullWidth
+                  label="Enter Password..."
+                  type="password"
+                  variant="outlined"
+                  error={!!errors['password']}
+                  {...register('password', {
+                    required: FIELD_REQUIRED_MESSAGE,
+                    pattern: {
+                      value: PASSWORD_RULE,
+                      message: PASSWORD_RULE_MESSAGE
+                    }
+                  })}
+                />
+                <FieldErrorAlert errors={errors} fieldName={'password'} />
+              </Box>
+              
+              <CardActions sx={{ padding: '1em 0 0 0' }}>
+                <Button
+                  className='interceptor-loading'
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  size="large"
+                  fullWidth
+                >
+                  Login
+                </Button>
+              </CardActions>
             </Box>
-          </Box>
-          <CardActions sx={{ padding: '0 1em 1em 1em' }}>
-            <Button
-              className='interceptor-loading'
-              type="submit"
-              variant="contained"
-              color="primary"
-              size="large"
-              fullWidth
-            >
-              Login
-            </Button>
-          </CardActions>
+          ) : (
+            // QR Code login
+            <Box sx={{ padding: '1em' }}>
+              <QRCodeScanner />
+            </Box>
+          )}
+
           <Box sx={{ padding: '0 1em 1em 1em', textAlign: 'center' }}>
             <Typography>New to Trello MERN Stack Advanced?</Typography>
             <Link to="/register" style={{ textDecoration: 'none' }}>
