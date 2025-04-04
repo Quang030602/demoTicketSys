@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, FormControl, InputLabel, MenuItem, Select, Typography } from "@mui/material";
+import  authorizedAxiosInstance  from '../../utils/authorizeAxios'
 
 const EditTicketModal = ({ ticket, open, onClose, onSave, fetchTickets }) => {
   const [formData, setFormData] = useState({
@@ -80,20 +81,17 @@ const EditTicketModal = ({ ticket, open, onClose, onSave, fetchTickets }) => {
     console.log(`${key}:`, value);
   }
     try {
-      const response = await fetch(`http://localhost:4953/v1/tickets/${ticket._id}`, {
-        method: "PUT",
-        body: updatedData,
-      });
-  
-      if (response.ok) {
-        const updatedTicket = await response.json();
-        onSave(updatedTicket);
-        onClose();
-      } else {
-        const errorData = await response.json();
-        console.error("Failed to update ticket:", errorData);
-        alert(`Lỗi cập nhật: ${errorData.message || "Có lỗi xảy ra!"}`);
-      }
+      const response = await authorizedAxiosInstance.put(
+        `http://localhost:4953/v1/tickets/${ticket._id}`, 
+        updatedData,
+        {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        }
+      );      
+      console.log("Response:", response);           
+      onSave(response.data);
+      onClose();
+       
     } catch (error) {
       console.error("Error updating ticket:", error);
       alert("Không thể kết nối với server!");
